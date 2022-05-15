@@ -1,71 +1,46 @@
 // ==UserScript==
-
 // @name         Bababot.js
-// @namespace    http://tampermonkey.net/
-// @version      v3.0
+// @namespace    https://github.com/bababoyisntapopularname
+// @version      v3.0public
+// @license      GPLv3
 // @description  Bababot
 // @author       Bababoy
-// @include      https://pixelplace.io/*
+// @match        https://pixelplace.io/*
 // @icon         https://i.imgur.com/PCn4MjQ.png
 // @require      https://pixelplace.io/js/jquery.min.js?v2=1
-// @require      https://pixelplace.io/js/jquery-ui.min.js?v2=1
+// @require      https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js
-// @require      https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/xterm/3.14.5/xterm.min.js
-// @require      https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js
+// @require      https://pixelplace.io/js/jquery-ui.min.js?v2=1
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
-// @require      https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/util.js
 // @require      https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/bababot_ws.js
-// @require      https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js
+// @require      https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/util.js
+// @require      https://raw.githubusercontent.com/turuslan/HackTimer/master/HackTimer.min.js
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
+/* globals toastr, interact, chroma, $, BababotWS, extensions, uBababot, Terminal */
 
-/**
-LICENSE OF HACKTIMER.JS MADE BY RUSLAN TUSHOW:
+if (localStorage.firstTime == undefined) {
+    localStorage.firstTime = true;
+    toastr.warning('Welcome to Bababot. Bababot is licensed under GPLv3. Made by Bababoy#1524',{ timeOut: 9500 })
+}
+function createWorker(code) {
+    return new Worker(URL.createObjectURL(new Blob([code],{ type: 'text/javascript' })))
+}
 
-The MIT License (MIT)
-
-Copyright (c) 2015 Ruslan Tushov
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-(function(s){var w,f={},o=window,l=console,m=Math,z='postMessage',x='HackTimer.js by turuslan: ',v='Initialisation failed',p=0,r='hasOwnProperty',y=[].slice,b=o.Worker;function d(){do{p=0x7FFFFFFF>p?p+1:0}while(f[r](p));return p}if(!/MSIE 10/i.test(navigator.userAgent)){try{s=o.URL.createObjectURL(new Blob(["var f={},p=postMessage,r='hasOwnProperty';onmessage=function(e){var d=e.data,i=d.i,t=d[r]('t')?d.t:0;switch(d.n){case'a':f[i]=setInterval(function(){p(i)},t);break;case'b':if(f[r](i)){clearInterval(f[i]);delete f[i]}break;case'c':f[i]=setTimeout(function(){p(i);if(f[r](i))delete f[i]},t);break;case'd':if(f[r](i)){clearTimeout(f[i]);delete f[i]}break}}"]))}catch(e){}}if(typeof(b)!=='undefined'){try{w=new b(s);o.setInterval=function(c,t){var i=d();f[i]={c:c,p:y.call(arguments,2)};w[z]({n:'a',i:i,t:t});return i};o.clearInterval=function(i){if(f[r](i))delete f[i],w[z]({n:'b',i:i})};o.setTimeout=function(c,t){var i=d();f[i]={c:c,p:y.call(arguments,2),t:!0};w[z]({n:'c',i:i,t:t});return i};o.clearTimeout=function(i){if(f[r](i))delete f[i],w[z]({n:'d',i:i})};w.onmessage=function(e){var i=e.data,c,n;if(f[r](i)){n=f[i];c=n.c;if(n[r]('t'))delete f[i]}if(typeof(c)=='string')try{c=new Function(c)}catch(k){l.log(x+'Error parsing callback code string: ',k)}if(typeof(c)=='function')c.apply(o,n.p)};w.onerror=function(e){l.log(e)};l.log(x+'Initialisation succeeded')}catch(e){l.log(x+v);l.error(e)}}else l.log(x+v+' - HTML5 Web Worker is not supported')})('HackTimerWorker.min.js');
-
-
-uBababot.jRequire(
-    "https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js"
-);
 uBababot.cImport("https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css");
 uBababot.cImport(
     "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
 );
-uBababot.cImport("https://unpkg.com/xterm@4.15.0-beta.10/css/xterm.css");
+uBababot.cImport("https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/menu.css")
 // -
-let cfg = {
-    timeout: localStorage.timeout - 0 || 100,
-};
-globalThis.cfg = cfg
 
-globalThis.extensions = []
+window.extensions = window.extensions || []
 //--BEGIN_TASKER.JS_BEGIN--
 
 class TaskerFactory {
@@ -73,6 +48,7 @@ class TaskerFactory {
     static PREVENT_DEFAULT = false
     constructor() {
         this._tasks = []
+        this.onImageTaskReorganize = undefined
         this._i = 0x0
         this.onTaskAction = TaskerFactory.EMPTY_FUNCTION
         this.onShuffleGranted = TaskerFactory.EMPTY_FUNCTION
@@ -81,9 +57,16 @@ class TaskerFactory {
         this._tasks.push(callback)
     }
     getTask() {
-        let task = this._tasks[this._i]
-        if (task != undefined)
+        let task = this._tasks.splice(0,1)
+        if (task.length == 1) {
+            task = task[0]
+        }
+        else {
+            task = undefined
+        }
+        if (task != undefined) {
             this._i++
+        }
         return task
     }
     reset() {
@@ -95,7 +78,8 @@ class TaskerFactory {
     }
 }
 let Tasker = new TaskerFactory();
-globalThis.Tasker = Tasker;
+var counter = 0
+window.Tasker = Tasker;
 /**
  * Shuffles array in place.
  * @param {Array} a items An array containing the items.
@@ -112,12 +96,16 @@ function shuffle(a) {
 }
 var shouldShuffle = false;
 var intervalCode;
-
+window.intervalCode = intervalCode
 function restartTasker() {
     clearInterval(intervalCode)
     intervalCode = setInterval(function () {
         let task = Tasker.getTask();
         if (task == undefined) {
+            Tasker.onTaskAction(undefined)
+            if (Tasker._i != 0) {
+                Tasker.destroy()
+            }
             return;
         }
         while (Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT || BababotWS.BBY_get_pixel(task.x, task.y) == task.color) {
@@ -130,16 +118,22 @@ function restartTasker() {
                 return;
             }
         }
-        BababotWS.BBY_put_pixel(task.x, task.y, task.color);
-    }, cfg.timeout)
+        if (task.mode == undefined) {
+            BababotWS.BBY_put_pixel(task.x, task.y, task.color);
+            counter++
+        } else {
+            BababotWS.BBY_emit('p',[task.x,task.y,task.color,task.pixelsize,task.mode])
+            counter++
+        }
+    }, localStorage.timeout)
 }
-globalThis.restartTakser = restartTasker
+window.restartTasker = restartTasker
 
 function killTasker() {
     clearInterval(intervalCode)
     intervalCode = undefined
 }
-globalThis.killTasker = killTasker
+window.killTasker = killTasker
 restartTasker()
 /*
 Take the possibility as:
@@ -147,9 +141,11 @@ a
 - == a/b
 b
 */
+window.multiBotDitherMode = true
 function TaskerFilterPixelsByCoordinate(a,b) {
     Tasker.onTaskAction = function(task) {
-        return (task.x + task.y) % b < a
+        if (task == undefined) return
+        return multiBotDitherMode?(task.x + task.y) % b < a:(task.x + task.y) % b > a
     }
 }
 var brush = 1
@@ -194,7 +190,7 @@ function UiPlacesAsTasker() {
         return true
     }
 }
-globalThis.UiPlacesAsTasker = UiPlacesAsTasker
+window.UiPlacesAsTasker = UiPlacesAsTasker
 
 function UiPlacesTaskerTasks() {
     killTasker()
@@ -208,6 +204,7 @@ function UiPlacesTaskerTasks() {
                     let task = Tasker._tasks.find(a => a.x == val[0] + i && a.y == val[1] + j)
                     if (task) {
                         BababotWS.BBY_put_pixel(task.x,task.y,task.color)
+                        counter++
                         let index = Tasker._tasks.indexOf(task)
                         Tasker._tasks.splice(index,1)
                     }
@@ -218,54 +215,8 @@ function UiPlacesTaskerTasks() {
         return true
     }
 }
-globalThis.UiPlacesTaskerTasks = UiPlacesTaskerTasks
-globalThis.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate
-function AntiFilterDictionaryFactory() {
-    var factory = {};
-    function get(name) {
-        if (factory[name] == undefined) {
-            //UUID
-            factory[name] = (() =>
-                             ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (a) =>
-                                                                          (a ^ ((Math.random() * 16) >> (a / 4))).toString(16)
-                                                                         ))();
-        }
-        return factory[name];
-    }
-    return {
-        get: get,
-    };
-}
-var dictionary = AntiFilterDictionaryFactory();
-console.log(dictionary.get("scope"));
-globalThis[dictionary.get("scope")] = new Object();
-// ! Do not just install this.
-// ! This has to be executed by a backend to actually interact with pixelplace.
-// ! And this isnt a userscript. It's just a normal javascript code.
-// ! It's built like this to actually auto-update!
-// ! Just don't worry. There isnt any other reason that this executes from The Web.
-// * You can just inspect the code. You will not see any bad thing.
-// * Remember to bleach these eyes after you look at my code :D
-// *                          -Bababoy
-
-// ! Runs at window-load.
-
-/**
- * @typedef {{hex: string, code: string}} ColorPacket
- */
-//
-
-
-function stressTest() {
-    let x = performance.now();
-    for (let m = 0; m < 1e6; m++) {
-        (function () {
-            return Math.floor(Math.PI * 5);
-        })();
-    }
-    let y = performance.now();
-    return y - x;
-}
+window.UiPlacesTaskerTasks = UiPlacesTaskerTasks
+window.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate
 console.log("%cBababot.js loaded. Made by Bababoy", "font-family: system-ui");
 const Palette = {
     order: [
@@ -315,6 +266,12 @@ const Palette = {
     ],
 };
 
+setTimeout(function() {
+    if (window.BababotWS  == undefined) {
+        toastr.warning('Bababot could not find Websocket process.Restarting')
+        location.reload()
+    }
+},10000)
 /**
  * @type {ColorPacket[]}
  */
@@ -545,142 +502,142 @@ function rgbToHex(packet) {
 function pixelPlaceToPixif(pixelplaceColor) {
     return String.fromCharCode("0".charCodeAt(0) + parseInt(pixelplaceColor));
 }
-
+var html = $(`<div id="menu" style="display: none;">
+  <div class="menuinside">
+    <div class="gradient_slider"></div>
+ 
+    <fieldset>
+      <legend>Image botting</legend>
+      <canvas id="m_canvas" width="100" height="100"></canvas>
+      <div>
+        <input id="m_width" type="number" class="numinput along" placeholder="Width" /><input id="m_height"
+          type="number"
+          placeholder="Height"
+          class="numinput along"
+        />
+      </div>
+      <label for="m_file" class="numinput along text"
+        >Image file</label
+      ><input type="file" id="m_file" style="display: none" />
+      <div class="smalltext" id="m_original"></div>
+      <div>
+        <input id="m_x" type="number" class="numinput along" placeholder="X" /><br /><input
+                                                                                            id="m_y"
+          type="number"
+          class="numinput along"
+          placeholder="Y"
+        />
+      </div>
+ 
+      <label class="control control-checkbox">
+        Filter grey
+        <input type="checkbox" id="m_filter"/>
+        <div class="control_indicator"></div>
+      </label>
+      <button class="numinput butbigger along text" id="m_start">Ѕtart Botting</button><br /><button
+                                                                                                   id="m_stop"
+        class="numinput butbigger along text"
+      >
+        Stop Botting
+      </button>
+    </fieldset>
+ 
+    <fieldset>
+      <legend>Other botting tools</legend>
+      <div class="smalltext">Extensions</div>
+ 
+      <div class="smalltext">Select an extension</div>
+      <div class="select">
+        <select id="m_select">
+        </select>
+        <div class="select_arrow"></div>
+      </div>
+      <div class="numinput along text" id="m_run">Run extension</div>
+</div>
+    </fieldset>
+  </div>
+</div>`)
+$(document.body).append(html)
 const Menu = {
-    preview: $("<div>"),
-    //style="display: none"
-    file: $('<input type="file">').attr("id", dictionary.get("file_input")),
-    file_label: $("<label>")
-    .attr("for", dictionary.get("file_input"))
-    .text("Image file (jpg,png etc.)"),
-    width: $('<input type="number" placeholder="Width">'),
-    height: $('<input type="number" placeholder="Height">'),
-    x: $('<input type="number" placeholder="X">'),
-    y: $('<input type="number" placeholder="Y">'),
-    start: $("<button>").html("Ŝtart Botting"),
-    original: $("<p>"),
-    stop: $("<button>").text("Stop Botting"),
-    canvas: document.createElement("canvas"),
+    canvas: document.createElement('canvas'),
+    canvas_display: document.getElementById('m_canvas'),
+    x: $('#m_x'),
+    y: $('#m_y'),
+    width: $('#m_width'),
+    height: $('#m_height'),
+    file: $('#m_file'),
+    filter: $('#m_filter'),
+    start: $('#m_start'),
+    stop: $('#m_stop'),
+    extensions_list: $('#m_select'),
+    extension_run: $('#m_run'),
+    original: $('#m_original'),
     img: new Image(),
     pixif: undefined,
     state: false,
-    rds: undefined,
-    intervalCode: undefined,
-};
-
-Menu.file.css("display", "none");
-$(Menu.canvas).css({
-    textAlign: "center",
-    border: "black 1px dotted",
-    paddingLeft: "0",
-    paddingRight: "0",
-    marginLeft: "auto",
-    marginRight: "auto",
-    display: "block",
-});
-$([Menu.x[0], Menu.y[0]]).css("width", "35%");
-$([
-    Menu.start[0],
-    Menu.stop[0],
-    Menu.file_label[0],
-    Menu.x[0],
-    Menu.y[0],
-    Menu.width[0],
-    Menu.height[0],
-]).css({
-    border: "2px rgb(8,8,8) solid",
-    background:
-    "linear-gradient(90deg, rgba(30,30,30,1) 0%, rgba(34,34,34,1) 100%)",
-    "border-radius": "0px",
-    color: "#d9d2d2",
-    padding: "5px",
-    "font-family": "monospace",
-    margin: "10px",
-});
-let uiMenu = $("<div>");
-
-Menu.preview.append(
-    $(Menu.canvas),
-    $("<div>").append(Menu.width, Menu.height),
-    Menu.file_label,
-    Menu.file,
-    Menu.original,
-    $("<div>").append(Menu.x, Menu.y),
-    $("<div>").append(Menu.start, Menu.stop)
-);
-uiMenu.append(Menu.preview);
-
-globalThis[dictionary.get("scope")].Menu = Menu;
+    rds:undefined,
+    intervalCode: undefined
+}
+window.Menu = Menu
 /**
  * @param {[Number,Number]} coords
  * @param {Array.<Array.<String>>} image
  * @param {Boolean} filterGrey
  */
 function drawImage(coords, image) {
-    globalThis[dictionary.get("scope")].Tasker = Tasker;
-    function generateTasks() {
-        for (let yAxis = 0; yAxis < image.length; yAxis++) {
-            for (let xAxis = 0; xAxis < image[yAxis].length; xAxis++) {
-                let pixel = image[yAxis][xAxis];
-                let [x, y] = coords;
+    var tasks = []
+    var worker_tasks = createWorker(`
+    onmessage = function(v) {
+    	var args = v.data
+    	var tasks = []
+        for (let yAxis = 0; yAxis < args.image.length; yAxis++) {
+            for (let xAxis = 0; xAxis < args.image[yAxis].length; xAxis++) {
+                let pixel = args.image[yAxis][xAxis];
+                let [x, y] = args.coords;
                 x += xAxis;
                 y += yAxis;
                 const color = pixel.charCodeAt(0) - "0".charCodeAt(0);
-                const canvas_color = BababotWS.BBY_get_pixel(x, y);
-                if (color == 64 || canvas_color == color || canvas_color == -1) {
-                    continue;
+                if (color == 64) {
+                    ${localStorage.usetransparent?'continue':'color = 1'};
                 }
-                Tasker.addTask({
+                tasks.push({
                     x: x,
                     y: y,
                     color: color,
                 });
             }
         }
+        postMessage(tasks)
+    }`)
+    worker_tasks.onmessage = function(tasks_raw) {
+        var tasks = tasks_raw.data
+        tasks.forEach(task => Tasker.addTask(task))
+        if (Tasker.onImageTaskReorganize) {
+            Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks,[image[0].length,image.length])
+        }
+        Tasker.onTaskAction = function(task) {
+            if (task == undefined) {
+                tasks.forEach(task => Tasker.addTask(task))
+            }
+        }
     }
     if (Tasker._i != 0) {
-        toastr.warning("You still bot somewhere. Stop it!");
         return;
     }
-    generateTasks();
-    Tasker.on_task = function (task) {
-        if (task == undefined) {
-            generateTasks();
-        }
-    };
-    /* EXPERIMENTAL USE ONLY (DELETION STARTS FROM THIS LINE)
-            THIS SCRIPT CAN CAUSE UNEXPECTED BEHAVIOUR WHEN YOU BOT SOME PLACE WITH DIFFERENT IMAGES
-            DO NOT DELETE IF YOU DONT KNOW WHAT YOURE DOING (DELETION ENDS IN THIS LINE)
-            BababotWS.BBY_on('p',function(content) {
-                    for (let colorPacket of content) {
-                        let x = colorPacket[0]
-                        let y = colorPacket[1]
-                        let color = colorPacket[2]
-                        if (coords[0] > x && x > coords[0] + image[0].length
-                            && coords[1] > y && y > coords[1]+image.length) {
-                            let pixel = image[x-coords[0]][y-coords[1]]
-                            let oldcolor = pixel.charCodeAt(0) - '0'.charCodeAt(0)
-                            if (color != oldcolor) {
-                                Tasker.addTask({x: x,y: y,color: oldcolor})
-                            }
-                        }
-                    }
-            })
-            (DELETE THIS LINE)*/
+    worker_tasks.postMessage({coords:coords,image:image})
 }
 Menu.start.on("click", function () {
     if (Menu.pixif == undefined) {
         toastr.error("Image not loaded.");
+        return
     }
     Menu.state = false;
     if ([!Menu.y.val(), !Menu.x.val()].indexOf(true) != -1) {
         toastr.error("Coordinates not specified or specified wrong.");
+        return
     }
     Menu.coords = [Menu.x.val(), Menu.y.val()].map(Number);
     drawImage(Menu.coords, Menu.pixif);
-    if (shouldShuffle) {
-        Tasker._tasks = shuffle(Tasker._tasks)
-    }
     if (intervalCode == undefined) {
         var context = canvas.getContext('2d')
         var children = $('#palette-buttons').children()
@@ -692,50 +649,44 @@ Menu.start.on("click", function () {
     }
 });
 Menu.stop.on("click", function () {
-    Tasker.on_task = undefined;
+    Tasker.onTaskAction = () => true
     Tasker.destroy();
 });
 
-function generatePixif(ctx) {
-    const imageData = ctx.getImageData(
-        0,
-        0,
-        Menu.canvas.width,
-        Menu.canvas.height
-    );
+function generatePixif(img) {
     let output = "";
-    for (let i = 0; i < imageData.data.length; i += 4) {
-        if ((i / 4) % Menu.canvas.width === 0 && i != 0) {
+    for (let i = 0; i < img.data.length; i += 4) {
+        if ((i / 4) % img.width === 0 && i != 0) {
             output += "\n";
         }
         /**
      * @type {RGB}
      */
         const colorInfo = {
-            r: imageData.data[i],
-            g: imageData.data[i + 1],
-            b: imageData.data[i + 2],
+            r: img.data[i],
+            g: img.data[i + 1],
+            b: img.data[i + 2],
         };
         /**
      * @type {number}
      */
         let color;
-        const colorHex = rgbToHex(colorInfo);
-        if (colorHex.toUpperCase() == "#BABAB0") {
-            color = 64;
+        // #BABAB0 's red value is 186
+        if (colorInfo.r == 186) {
+            color = 64
         }
         for (let pixelColor of Colors) {
-            if (pixelColor.hex.toLowerCase() === colorHex.toLowerCase()) {
+            if (pixelColor.hex.toLowerCase() == colorHex.toLowerCase()) {
                 color = pixelColor.code;
             }
         }
         if (color == undefined) {
-            color = rgbToPixelPlacePalette(colorInfo);
+            color = 64
         }
         output += pixelPlaceToPixif(color);
     }
+    return output.split('\n')
     Menu.pixif = output.split("\n");
-    Menu.pixif[Menu.pixif.length-1] = Menu.pixif[Menu.pixif.length-1].substring(0,Menu.pixif[0].length-4)+'RL<D'
 }
 Menu.file.on("change", function () {
     let reader = new FileReader();
@@ -749,128 +700,122 @@ Menu.file.on("change", function () {
                     `Original size: ${Menu.img.width}px to ${Menu.img.height}px`
         );
                 ctx.fillStyle = "#BABAB0";
-                ctx.fillRect(0, 0, Menu.canvas.width, Menu.canvas.height);
-                ctx.drawImage(Menu.img, 0, 0, Menu.canvas.width, Menu.canvas.height);
-                generatePixif(ctx);
+                ctx.fillRect(0, 0, Menu.original_width, Menu.original_height);
+                ctx.drawImage(Menu.img, 0, 0, Menu.original_width, Menu.original_height);
+                process()
             };
         };
         reader.readAsDataURL(file);
     }
 });
-    let size_callback = function () {
-        let width = Number(Menu.width.val());
-        let height = Number(Menu.height.val());
-        if ([!!width, !!height].includes(false)) {
-            return -1;
+let size_callback = function () {
+    let width = Number(Menu.width.val());
+    let height = Number(Menu.height.val());
+    if ([!!width, !!height].includes(false)) {
+        return -1;
+    }
+    function rationalize(width,height) {
+        var fit_in = 100
+        if (fit_in >= width && fit_in >= height) {
+            return [width,height]
         }
-        Menu.canvas.width = width;
-        Menu.canvas.height = height;
-        /**
+        var biggest = Math.max(width,height)
+        var smallest = Math.min(width,height)
+        if (biggest == width) {
+            return [fit_in,height/width*fit_in]
+        } else {
+            return [width/height*fit_in,fit_in]
+        }
+    }
+    var [nWidth,nHeight] = rationalize(width,height)
+    Menu.canvas.width = width;
+    Menu.canvas.height = height;
+    Menu.canvas_display.width = nWidth
+    Menu.canvas_display.height = nHeight
+    Menu.original_width = width;
+    Menu.original_height = height;
+    /**
    * @type {CanvasRenderingContext2D}
    */
-        let ctx = Menu.canvas.getContext("2d");
-        ctx.fillStyle = "#BABAB0";
-        ctx.fillRect(0, 0, Menu.canvas.width, Menu.canvas.height);
-        ctx.drawImage(Menu.img, 0, 0, Menu.canvas.width, Menu.canvas.height);
-        generatePixif(ctx);
-    };
-    Menu.width.on("change", size_callback);
-    Menu.height.on("change", size_callback);
+    let ctx = Menu.canvas.getContext("2d");
+    ctx.fillStyle = "#BABAB0";
+    ctx.fillRect(0, 0, Menu.original_width, Menu.original_height);
+    ctx.drawImage(Menu.img, 0, 0, Menu.original_width, Menu.original_height);
+    process()
+};
+Menu.width.on("change", size_callback);
+Menu.height.on("change", size_callback);
+Menu.width.val(100)
+Menu.height.val(100)
+setTimeout(size_callback,1000)
+let bababot = $('<a target="_blank" href="https://github.com/bababoyisntapopularname/bababot">Bababot</a>').css({
+    display: "block",
+    position: "absolute",
+    width: "auto",
+    bottom: "11px",
+    right: "250px",
+    color: "#ffffff",
+    "text-shadow": "1px 1px 1px #000000",
+    "font-size": "0.9em",
+});
+$('#menu').draggable()
+$("#container").append(bababot);
+let buttons = $("#menu-buttons");
+let elem = $(
+    '<a href="#" title="Bot Menu" class="grey margin-top-button"><img src="https://svgshare.com/i/_CM.svg" alt="icon"></a>'
+);
+elem.on("click", function () {
+    html.fadeToggle("fast");
+});
+buttons.append(elem);
 
-    uiMenu.css({
-        display: "none",
-        position: "absolute",
-        "font-family": "Monospace",
-        color: "#d9d2d2",
-        background: "rgb(27,27,27)",
-        border: "5px rgb(188,26,26) solid",
-        transform: "translate(-50%, -50%)",
-        top: "50%",
-        left: "50%",
-        padding: "20px",
-    });
-
-    $(document.body).append(uiMenu);
-    let bababot = $('<a class="rainbowText">Bababot</a>').css({
-        display: "block",
-        position: "absolute",
-        width: "auto",
-        bottom: "11px",
-        right: "250px",
-        color: "#ffffff",
-        "text-shadow": "1px 1px 1px #000000",
-        "font-size": "0.9em",
-    });
-    $("#container").append(bababot);
-    let buttons = $("#menu-buttons");
-    let elem = $(
-        '<a href="#" title="Bot Menu" class="grey margin-top-button"><img src="https://svgshare.com/i/_CM.svg" alt="icon"></a>'
-    );
-    elem.on("click", function () {
-        uiMenu.fadeToggle("fast");
-    });
-    buttons.append(elem);
-
-    document.onpaste = function (event) {
-        if (uiMenu.css("display") == "none") {
-            return;
-        }
-        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-        console.log(JSON.stringify(items)); // will give you the mime types
-        for (let index in items) {
-            var item = items[index];
-            if (item.kind === "file") {
-                var blob = item.getAsFile();
-                let reader = new FileReader();
-                reader.onload = function (event) {
-                    console.log("Breakpoint 2");
-                    Menu.img.src = String(reader.result);
-                    Menu.img.onload = function () {
-                        console.log("Breakpoint 3");
-                        let ctx = Menu.canvas.getContext("2d");
-                        Menu.original.text(
-                            `Original size: ${Menu.img.width}px to ${Menu.img.height}px`
+document.onpaste = function (event) {
+    if (html.css("display") == "none") {
+        return;
+    }
+    var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    console.log(JSON.stringify(items)); // will give you the mime types
+    for (let index in items) {
+        var item = items[index];
+        if (item.kind === "file") {
+            var blob = item.getAsFile();
+            let reader = new FileReader();
+            reader.onload = function (event) {
+                console.log("Breakpoint 2");
+                Menu.img.src = String(reader.result);
+                Menu.img.onload = function () {
+                    console.log("Breakpoint 3");
+                    let ctx = Menu.canvas.getContext("2d");
+                    Menu.original.text(
+                        `Original size: ${Menu.img.width}px to ${Menu.img.height}px`
           );
                     ctx.fillStyle = "#BABAB0";
-                    ctx.fillRect(0, 0, Menu.canvas.width, Menu.canvas.height);
-                    ctx.drawImage(Menu.img, 0, 0, Menu.canvas.width, Menu.canvas.height);
-                    generatePixif(ctx);
+                    ctx.fillRect(0, 0, Menu.original_width, Menu.original_height);
+                    ctx.drawImage(Menu.img, 0, 0, Menu.original_width, Menu.original_height);
+                    process()
                 };
             }; // data url!
             reader.readAsDataURL(blob);
         }
     }
 };
-
-var guild = "";
-var painting = "";
-var global = "";
-/**
- * @type {function}
- */
-var on_chat_message = undefined;
-// beforeunload
-
-let waitcode = setInterval(function () {
-    if (window.BababotWS) {
-        clearInterval(waitcode);
-        BababotWS.BBY_on("chat.user.message", function (msg) {
-            if (msg.channel == "guild") {
-                guild += `${msg.username}:${msg.message}\n`;
-                return;
-            } else if (msg.channel == "painting") {
-                painting += `${msg.username}:${msg.message}\n`;
-                return;
-            } else if (msg.channel == "global") {
-                global += `${msg.username}:${msg.message}\n`;
-            }
-            on_chat_message && on_chat_message(`\r${msg.username}:${msg.message}`)
-            // term.writeln(`\r${msg.username}:${msg.message}`);
-            // term.prompt();
-        });
+Menu.filter.on('change',function() {
+    localStorage.usetransparent = Menu.filter.prop('checked')
+})
+Menu.filter.prop('checked',localStorage.usetransparent)
+function extension_load() {
+    if ($('#m_select option').length != 0) return
+    $('#m_select option').remove()
+    for (let extension of window.extensions) {
+        var option = $('<option>').html(extension[1])
+        Menu.extensions_list.append(option)
     }
-}, 10);
-
+}
+setInterval(extension_load,30_000)
+setTimeout(extension_load,5_000)
+Menu.extension_run.on('click',function() {
+    window.extensions.find(a => a[1] == Menu.extensions_list.val())[0]()
+})
 function createGraphWindow() {
     var ctx = window.open('','','width=550,height=450')
     var interval = undefined
@@ -915,10 +860,10 @@ function createGraphWindow() {
         options: options,
         data: data
     });
-    var pps = Number(Tasker._i)
+    var pps = Number(counter)
     let i = 0
     interval = setInterval(function() {
-        var pps_ = Number(Tasker._i)
+        var pps_ = Number(counter)
         var math_pps = Number(pps_ - pps)
         pps = pps_
         if (math_pps < 0) {
@@ -930,7 +875,7 @@ function createGraphWindow() {
     },1000)
 }
 
-globalThis.graph = createGraphWindow
+window.graph = createGraphWindow
 /**
  * @type {Window[]}
  */
@@ -942,8 +887,360 @@ function getSelectedColor() {
         )
     ).attr('data-id') - 0
 }
-globalThis.getSelectedColor = getSelectedColor
-var fill = function() {
+window.getSelectedColor = getSelectedColor
+var dither = (function() {
+    var i = 10
+    return function decrease() {
+        i -= 1
+        if (i <= 0) {
+            i = 10
+        }
+        TaskerFilterPixelsByCoordinate(i,10)
+        return i * 10
+    }
+})()
+$(document.body).on('keypress',function(x) {
+    if (document.activeElement == document.querySelector("#chat > form > input[type=text]")) {
+        return
+    }
+    switch(x.key) {
+        case '_':
+            window.graph()
+            break
+        case '%':
+            toastr.info(`Dither set to: ${dither()}%`)
+            break
+        case '+':
+            shouldShuffle = !shouldShuffle
+            if (shouldShuffle) {
+                Tasker.onImageTaskReorganize = shuffle
+            } else {
+                Tasker.onImageTaskReorganize = undefined
+            }
+            toastr.info('Should shuffle: '+shouldShuffle)
+            break
+        case '-':
+            increaseBrush()
+            toastr.info(`Brush size: ${brush}`)
+            break
+        case ';':
+            changePaintMode()
+            break
+        case 'p':
+            var [cx,cy] = $('#coordinates').text().split(',').map(Number)
+            Menu.x.val(cx)
+            Menu.y.val(cy)
+            break
+    }
+})
+function putPixels(subpxArr) {
+    var can = Menu.canvas;
+    var ctx = can.getContext("2d"),
+        imgd = ctx.createImageData(can.width, can.height);
+    imgd.data.set(subpxArr)
+    ctx.putImageData(imgd, 0, 0)
+    Menu.canvas_display.getContext('2d').drawImage(Menu.canvas,0,0,Menu.canvas.width,Menu.canvas.height,0,0,Menu.canvas_display.width,Menu.canvas_display.height)
+}
+var code = (await (await fetch('https://raw.githubusercontent.com/leeoniya/RgbQuant.js/master/src/rgbquant.js')).text())
+
+var worker_iprocess = createWorker(code + `
+var pixelplace = [[255,255,255],[196,196,196],[136,136,136],[85,85,85],[34,34,34],[0,0,0],[0,102,0],[34,177,76],[2,190,1],[148,224,68],[251,255,91],[229,217,0],[230,190,12],[229,149,0],[160,106,66],[153,83,13],[99,60,31],[107,0,0],[159,0,0],[229,0,0],[187,79,0],[255,117,95],[255,196,159],[255,223,204],[255,167,209],[207,110,228],[236,8,236],[130,0,128],[2,7,99],[0,0,234],[4,75,255],[101,131,207],[54,186,255],[0,131,199],[0,211,221]]
+const Colors = [{"code":"0","rgb":[255,255,255]},{"code":"1","rgb":[196,196,196]},{"code":"2","rgb":[136,136,136]},{"code":"3","rgb":[85,85,85]},{"code":"4","rgb":[34,34,34]},{"code":"5","rgb":[0,0,0]},{"code":"6","rgb":[0,102,0]},{"code":"7","rgb":[34,177,76]},{"code":"8","rgb":[2,190,1]},{"code":"10","rgb":[148,224,68]},{"code":"11","rgb":[251,255,91]},{"code":"12","rgb":[229,217,0]},{"code":"13","rgb":[230,190,12]},{"code":"14","rgb":[229,149,0]},{"code":"15","rgb":[160,106,66]},{"code":"16","rgb":[153,83,13]},{"code":"17","rgb":[99,60,31]},{"code":"18","rgb":[107,0,0]},{"code":"19","rgb":[159,0,0]},{"code":"20","rgb":[229,0,0]},{"code":"22","rgb":[187,79,0]},{"code":"23","rgb":[255,117,95]},{"code":"24","rgb":[255,196,159]},{"code":"25","rgb":[255,223,204]},{"code":"26","rgb":[255,167,209]},{"code":"27","rgb":[207,110,228]},{"code":"28","rgb":[236,8,236]},{"code":"29","rgb":[130,0,128]},{"code":"31","rgb":[2,7,99]},{"code":"32","rgb":[0,0,234]},{"code":"33","rgb":[4,75,255]},{"code":"34","rgb":[101,131,207]},{"code":"35","rgb":[54,186,255]},{"code":"36","rgb":[0,131,199]},{"code":"37","rgb":[0,211,221]}]
+function generatePixif(img,width) {
+    let output = "";
+    for (let i = 0; i < img.length; i += 4) {
+        if ((i / 4) % width === 0 && i != 0) {
+            output += "\\n";
+        }
+        /**
+     * @type {RGB}
+     */
+        const colorInfo = {
+            r: img[i],
+            g: img[i + 1],
+            b: img[i + 2],
+        };
+        /**
+     * @type {number}
+     */
+        let color;
+        // #BABAB0 's red value is 186
+        if (colorInfo.r == 186) {
+            color = 64
+        }
+        for (let pixelColor of Colors) {
+            if (pixelColor.rgb.join('') == [colorInfo.r,colorInfo.g,colorInfo.b].join('')) {
+                color = pixelColor.code;
+            }
+        }
+        if (color == undefined) {
+            color = 64
+        }
+        output += String.fromCharCode("0".charCodeAt(0) + parseInt(color));
+    }
+    return output.split('\\n')
+}
+onmessage = function(i) {
+	var palette = Array.from(pixelplace)
+	if (i.data.usetransparent) {
+		palette.push([186,186,176])
+	}
+	var q = new RgbQuant({
+    	colors: 40,
+    	palette: palette,
+    	reIndex: !0,
+    	dithKern: "FloydSteinberg",
+    	dithDelta: .05,
+    	useCache: !1
+	});
+ 
+    console.log(i)
+    console.time("Image load")
+    q.sample(i.data.img.data);
+    console.timeLog("Image load")
+    var r = q.reduce(i.data.img.data)
+    console.timeLog("Image load")
+    var pixif = generatePixif(r,i.data.img.width)
+    console.timeEnd("Image load")
+    postMessage([r,pixif])
+}`)
+
+function process() {
+    var i = Menu.canvas
+    var c = i.getContext('2d')
+    var data = c.getImageData(0,0,Menu.original_width,Menu.original_height)
+    worker_iprocess.postMessage({img: data,usetransparent: localStorage.usetransparent})
+}
+worker_iprocess.onmessage = pkg => {
+    var data = pkg.data
+    var i = Menu.canvas
+    var c = i.getContext('2d')
+    putPixels(data[0])
+    Menu.pixif = data[1]
+}
+function loadAntiDotPlugin() {
+    // BABABOT ANTI DOT BEGIN
+    function antiDot(globalName) {
+        var cfg = {
+            protectedArea: undefined,
+            color: undefined,
+            timeout: 20,
+            targetColor: undefined
+        };
+        var destroyed = false
+        BababotWS.BBY_on("p", function (content) {
+            if (destroyed) {
+                return
+            }
+            for (let colorPacket of content) {
+                let x = colorPacket[0];
+                let y = colorPacket[1];
+                let color = colorPacket[2];
+                if (
+                    cfg.protectedArea[0][1] > x &&
+                    x > cfg.protectedArea[0][0] &&
+                    cfg.protectedArea[1][1] > y &&
+                    y > cfg.protectedArea[1][0]
+                ) {
+                    if (cfg.targetColor != undefined && cfg.targetColor != color) {
+                        continue
+                    }
+                    if (color != cfg.color) {
+                        Tasker.addTask({ x: x, y: y, color: cfg.color });
+                    }
+                }
+            }
+        });
+        function destroy() {
+            destroyed = true
+        }
+        function activate() {
+            destroyed = false
+        }
+        window[globalName || 'stuff'] = { config: cfg, code: 0, tasker: Tasker, destroy: destroy, activate: activate};
+    }
+    window.antiDot = antiDot;
+}
+
+if(document.readyState !== 'complete') {
+    window.addEventListener('load',loadAntiDotPlugin);
+} else {
+    toastr.info('Low resource detected.')
+    loadAntiDotPlugin();
+}
+window.extensions = window.extensions || []
+var amogus = `______
+__..._
+_..**_
+_...._
+__..._
+__._._
+______`.split('\n')
+
+function filter(tasks) {
+    return tasks.filter(x => x.color != BababotWS.BBY_get_pixel(x.x,x.y) && x.color != -1)
+}
+
+extensions.push([() => Tasker.onTaskAction = function(task) {
+    if (task == undefined) return
+    let chunkCoord = [Math.floor(task.x / amogus[0].length) * amogus[0].length,
+                      Math.floor(task.y / amogus.length) * amogus.length]
+    let amogusCoord = [task.x - chunkCoord[0],task.y - chunkCoord[1]]
+    let ascii = amogus[amogusCoord[1]][amogusCoord[0]]
+    if (ascii == '_') {
+        return false
+    } else if (ascii == '.') {
+        task.color = getSelectedColor()
+    } else if (ascii == '*') {
+        task.color = color('white')
+    } else {
+        toastr.error('unexpected pixel')
+    }
+    return true
+},'amogus'])
+
+extensions.push([() => Tasker.onTaskAction = function(task) {
+    if (task == undefined) return
+    task.color = parseInt(['35', '26', '0', '26', '35'][(task.y) % 5])
+    return true
+},'trans'])
+
+extensions.push([() => Tasker.onTaskAction = function(task) {
+    if (task == undefined) return
+    task.color = parseInt(['20', '14', '12', '8', '33', '29'][(task.y) % 6])
+    return true
+},'lgbt'])
+
+extensions.push([() => Tasker.onTaskAction = function(task) {
+    if (task == undefined) return
+    task.color = parseInt(['27', '26', '0', '37', '0', '26'][(task.y) % 6])
+    return true
+},'femboy'])
+
+extensions.push([function() {
+    var rectsize = 2
+    window.rectsize = rectsize
+    function ontask(task) {
+        return task != undefined && ((task.y % (rectsize + 1)) == 0 || (task.x % (rectsize + 1)) >= rectsize)
+    }
+    Tasker.onTaskAction = ontask
+    Tasker.onImageTaskReorganize = function(tasks) {
+        return tasks.filter(ontask)
+    }
+},'┼ styled pixelating'])
+extensions.push([function() {
+    /**
+ * Shuffles array in place.
+ * @param {Array} a items An array containing the items.
+ */
+    function shuffle(a) {
+        var j, x, i;
+        for (i = a.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            x = a[i];
+            a[i] = a[j];
+            a[j] = x;
+        }
+        return a;
+    }
+    Tasker.onImageTaskReorganize = function(tasks) {
+        tasks = shuffle(tasks)
+        tasks = filter(tasks)
+        // change pixelradius from localstorage or keep it as 5
+        var pixelRadius = (localStorage.pixelradius - 0) || 5
+        var newTasks = Array.from(tasks)
+        var pixels = []
+        var stucknum = 0
+        while (newTasks.length != 0) {
+            var found_a_match = false
+            var task = newTasks.shift()
+            if (pixels.length == 0) {
+                pixels.push(task)
+                found_a_match = true
+            } else if (stucknum > newTasks.length) {
+                pixels = [...pixels,task]
+                found_a_match = true
+            } else {
+                for (let pixel of pixels) {
+                    if ((task.x-pixel.x)**2+(task.y-pixel.y)**2 <= pixelRadius**2) {
+                        pixels.push(task)
+                        found_a_match = true
+                        break
+                    }
+                }
+            }
+            if (!found_a_match) {
+                newTasks.push(task)
+                stucknum++
+            } else {
+                stucknum = 0
+            }
+        }
+        return pixels
+    }
+},'circledotting'])
+extensions.push([function() {
+    function coordinate(x,y,ox,oy) {
+        return [Math.abs(x-ox),Math.abs(y-oy)]
+    }
+    Tasker.onImageTaskReorganize = function(tasks,width,height,cx,cy) {
+        var [originX,originY] = [Math.floor(width/2)+cx,Math.floor(height/2)+cy];
+        tasks.sort((pixel1,pixel2) => Math.hypot(pixel1.x-originX,pixel1.y-originY)-Math.hypot(pixel2.x-originX,pixel2.y-originY))
+        return tasks
+    }
+},'circlefilling'])
+
+extensions.push([function() {
+    var colors = Array.from(document.querySelector("#palette-buttons").children).filter(x => x.className != 'disabled').map(x => parseInt(x.getAttribute('data-id')))
+    function ontask(task) {
+        return task
+    }
+    Tasker.onTaskAction = function(task) {
+        if (task == undefined) return
+        task.color = colors[Math.floor(Math.random()*colors.length)]
+        return true
+    }
+    Tasker.onImageTaskReorganize = function(tasks) {
+        if (!tasks || tasks.length == 0) {
+            return []
+        }
+        return tasks.map(function(task) {
+            if (task == undefined) return
+            task.color = colors[Math.floor(Math.random()*colors.length)]
+            return task})
+    }
+},'war'])
+
+extensions.push([function() {
+    var colors = Array.from(document.querySelector("#palette-buttons").children).filter(x => x.className != 'disabled').map(x => parseInt(x.getAttribute('data-id')))
+    function ontask(task) {
+        return task
+    }
+    Tasker.onTaskAction = function(task) {
+        if (task == undefined) return
+        task.color = colors[Math.floor(Math.random()*colors.length)]
+        return true
+    }
+    Tasker.onImageTaskReorganize = function(tasks) {
+        if (!tasks || tasks.length == 0) {
+            return []
+        }
+        return tasks.map(function(task) {
+            if (task == undefined) return
+            task.color = colors[Math.floor(Math.random()*colors.length)]
+            task.x = tasks[0].x
+            task.y = tasks[0].y
+            return task})
+    }
+},'war in one pixel'])
+
+
+extensions.push([function() {
+    Tasker.onTaskAction = () => true
+    Tasker.onImageTaskReorganize = undefined
+},'Normalize Tasker events'])
+
+extensions.push([function() {
     function getCoordinate() {
         let raw = $('#coordinates').text();
         let arr = raw.split(',').map((x) => parseInt(x.replace(',', '')));
@@ -975,254 +1272,28 @@ var fill = function() {
                         // @TODO Tasker
                         x: mvpModeX,
                         y: y,
-                        color: color, // @TODO getColor()
+                        color: color,
                     });
                 }
             }
+            if (Tasker.onImageTaskReorganize) {
+                Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks,end_coordinate[0]-start_coordinate[0],end_coordinate[1]-start_coordinate[1],...start_coordinate)
+            }
             start_coordinate = undefined;
         } else {
-            start_coordinate = getCoordinate(); //@TODO getCoordinate
+            start_coordinate = getCoordinate();
         }
         interact('a[data-id=\'painting\']').on('load', function () {
             $('a[data-id=\'painting\']').css('display', 'block');
         });
     });
-}
-globalThis.fill = fill
-function createConsoleWindow() {
-    console_contexts.forEach(x => x.close())
-    var ctx = window.open('','','width=550,height=450')
-    console_contexts.push(ctx)
-    var ctxj = $(ctx.document.body)
-    ctx.onunload = function() {
-        console_contexts = []
-    }
-    ctx.document.title = 'Bababot Console'
-    ctxj.append($('<link rel="stylesheet" href="https://unpkg.com/xterm@4.15.0-beta.10/css/xterm.css" />'))
-    var term = new Terminal({
-        rows: 23,
-        cols: 60,
-    });
-    var term_dom = $("<div>").css({
-        position: "absolute",
-    });
-    term_dom = term_dom[0];
-    ctxj.append(term_dom);
-    term.open(term_dom);
-    var buff = "";
-    term.prompt = function () {
-        term.write("\r\n$" + buff);
-    };
-    window.term = term
-    term.writeln('Bababot Javascript Shell\ntype "help" for commands');
+},'fill'])
 
-    term.prompt();
-    let scope = {
-        sendchat: (x) => BababotWS.BBY_send_chat(x),
-        place: (...x) => BababotWS.BBY_put_pixel(...x),
-        getp: (...x) => BababotWS.BBY_get_pixel(...x),
-        help: "",
-        clear: () => term.clear(),
-    };
-    scope.help = Object.getOwnPropertyNames(scope);
-    var _extensions = undefined
-    fetch('https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/extensions.json').then(x => x.json()).then(x => {
-        _extensions = x
-    })
-    var load = function(name) {
-        let a = _extensions.extensions.filter(x => x.name == name)
-        if (a) {
-            eval(a.code)
-            term.write('SUCCESFULLY LOADED '+name)
-        }
-    }
+extensions.push([function() {
+    localStorage.timeout = parseInt(prompt('Your timeout is ' + localStorage.timeout + ' at the moment. Set timeout to (ms):'))
+},'Set timeout'])
 
-    load.toString = () => "[bababot function load]"
-    fill.toString = () => "[bababot function fill]"
-    term.on("key", (key, ev) => {
-        const printable =
-              !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey;
-        if (ev.keyCode == 32) {
-            term.write("asd");
-        }
-        if (ev.keyCode === 13) {
-            var result;
-            try {
-                result = eval("with(scope) {" + buff + "}")
-                    ?.toString()
-                    .replaceAll("\n", "\r\n");
-            } catch (e) {
-                result = e;
-            }
-            if (result) {
-                term.writeln("\n\r" + result);
-            }
-            buff = "";
-            term.prompt();
-        } else if (ev.keyCode === 8) {
-            // Do not delete the prompts
-            buff = buff.slice(0, -1);
-            if (term.buffer.cursorX >= 2) {
-                term.write("\b \b");
-            }
-        } else if (printable) {
-            buff += key;
-            term.write("\33[2K\r$" + buff);
-        }
-    });
-
-    term.on("paste", function (data) {
-        term.write(data);
-    });
-
-    on_chat_message = function(msg) {
-        term.write(msg)
-        term.prompt()
-    }
-}
-
-var dither = (function() {
-    var i = 10
-    return function decrease() {
-        i -= 1
-        if (i <= 0) {
-            i = 10
-        }
-        TaskerFilterPixelsByCoordinate(i,10)
-        return i * 10
-    }
-})()
-
-var loadExtension = (function() {
-    var i = 0
-    function load() {
-        if (i >= extensions.length) {
-            i = 0
-        }
-        extensions[i][0]()
-        toastr.info('Ran extension: ' + extensions[i][1])
-        i++
-    }
-    return load
-})()
-$(document.body).on('keypress',function(x) {
-    if (x.key == '"') {
-        createConsoleWindow()
-    } else if (x.key == '_') {
-        window.graph()
-    } else if (x.key == '=') {
-        toastr.info('fill opened')
-        fill()
-    } else if (x.key == '%') {
-        toastr.info(`Dither set to: ${dither()}%`)
-    } else if (x.key == '+') {
-        shouldShuffle = !shouldShuffle
-        toastr.info(`Should shuffle: ${shouldShuffle}`)
-    } else if (x.key == '-') {
-        increaseBrush()
-        toastr.info(`Brush size: ${brush}`)
-    } else if (x.key == ';') {
-        changePaintMode()
-    } else if (x.key == '/') {
-        loadExtension()
-    }
-})
-
-function loadAntiDotPlugin() {
-    // BABABOT ANTI DOT BEGIN
-    function antiDot(globalName) {
-        let trustworthy = [];
-        let cfg = {
-            protectedArea: undefined,
-            color: undefined,
-            timeout: 20,
-            targetColor: undefined
-        };
-        let protectedArea = undefined;
-        let color = undefined;
-        var destroyed = false
-        BababotWS.BBY_on("p", function (content) {
-            if (destroyed) {
-                return
-            }
-            for (let colorPacket of content) {
-                let x = colorPacket[0];
-                let y = colorPacket[1];
-                let color = colorPacket[2];
-                if (
-                    cfg.protectedArea[0][1] > x &&
-                    x > cfg.protectedArea[0][0] &&
-                    cfg.protectedArea[1][1] > y &&
-                    y > cfg.protectedArea[1][0]
-                ) {
-                    if (cfg.targetColor != undefined && cfg.targetColor != color) {
-                        continue
-                    }
-                    if (color != cfg.color) {
-                        Tasker.addTask({ x: x, y: y, color: cfg.color });
-                    }
-                }
-            }
-        });
-        function destroy() {
-            destroyed = true
-        }
-        function activate() {
-            destroyed = false
-        }
-        globalThis[globalName || 'stuff'] = { config: cfg, code: 0, tasker: Tasker, destroy: destroy, activate: activate};
-    }
-    globalThis.antiDot = antiDot;
-    globalThis.color = function (y) {
-        let color = chroma(y).rgb();
-        return rgbToPixelPlacePalette({ r: color[0], g: color[1], b: color[2] });
-    };
-}
-
-if(document.readyState !== 'complete') {
-    if (loader.style.display == 'none' && window.BababotWS == undefined) {
-        toastr.warning('BababotWS could not found. Probably because low resource. Restarting')
-        location.reload()
-    }
-    window.addEventListener('load',loadAntiDotPlugin);
-} else {
-    toastr.info('Low resource detected.')
-    loadAntiDotPlugin();
-    if (loader.style.display == 'none' && window.BababotWS == undefined) {
-        toastr.warning('BababotWS could not found. Probably because low resource. Restarting')
-        location.reload()
-    }
-}
-
-
-function PixelArt(coords, pixif) {
-    let ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgb(255,0,255)";
-    for (let line in pixif) {
-        for (let char in pixif[line]) {
-            if (pixif[line][char] != "p") {
-                ctx.fillRect(coords[0] + char, coords[1] + line, 1, 1);
-            }
-        }
-    }
-    BababotWS.BBY_on("p", function (content) {
-        for (let pixel of content) {
-            let y = pixel[1] - coords[1];
-            let x = pixel[0] - coords[0];
-            if (pixel[0] > coords[0] && coords[0] + pixif[0].length > pixel[0]) {
-                if (pixel[1] > coords[1] && coords[0] + pixif.length > pixel[0]) {
-                    let character = pixif[y - 0][x - 0].charCodeAt(0) - "0".charCodeAt(0);
-                    if (BababotWS.BBY_get_pixel(x, y) != character) {
-                        Tasker.addTask({
-                            x: x,
-                            y: y,
-                            color: character,
-                        });
-                    }
-                }
-            }
-        }
-    });
-}
-
-
+extensions.push([function() {
+    var name = prompt('Go to user:')
+    $($('.messages div a[class="user open-profile"]')[0]).attr('data-profile',name).attr('data-id',name).click()
+},'Go to user profile'])
