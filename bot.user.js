@@ -32,6 +32,9 @@ if (localStorage.firstTime == undefined) {
     { timeOut: 9500 }
   );
 }
+localStorage.timeout = localStorage.timeout || '40'
+window.extensions = window.extensions || [];
+
 function createWorker(code) {
   return new Worker(
     URL.createObjectURL(new Blob([code], { type: "text/javascript" }))
@@ -45,10 +48,6 @@ uBababot.cImport(
 uBababot.cImport(
   "https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/menu.css"
 );
-// -
-
-window.extensions = window.extensions || [];
-//--BEGIN_TASKER.JS_BEGIN--
 
 class TaskerFactory {
   static EMPTY_FUNCTION = () => true;
