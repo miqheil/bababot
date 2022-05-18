@@ -1,5 +1,5 @@
 // @author @Bababoy#1524
-// Licensed as idk
+// Licensed in GPLv3
 function addCss(cssCode) {
   var styleElement = document.createElement("style");
   if (styleElement.styleSheet) {
