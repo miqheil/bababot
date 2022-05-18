@@ -107,7 +107,7 @@ legend {
   border: 1px solid #000000;
 }
 .control-radio .control_indicator {
-  border-radius: undefined%;
+  border-radius: 0%;
 }
 
 .control:hover input ~ .control_indicator,
@@ -217,7 +217,7 @@ legend {
 }
 .select select:hover ~ .select_arrow,
 .select select:focus ~ .select_arrow {
-  border-top-color: #98989;
+  border-top-color: #989898;
 }
 .select select:disabled ~ .select_arrow {
   border-top-color: #989898;
