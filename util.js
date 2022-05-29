@@ -144,4 +144,4 @@ window.i18n = {
   get: function(key) {
     return _i18n[key][mode];
   }
-}
+};
