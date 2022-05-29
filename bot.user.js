@@ -242,6 +242,18 @@ function UiPlacesTaskerTasks() {
 window.UiPlacesTaskerTasks = UiPlacesTaskerTasks;
 window.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate;
 console.log("%cBababot.js loaded. Made by Bababoy", "font-family: system-ui");
+var call = function(info) {
+    var bio = document.querySelector("#profile > div > div > div:nth-child(2) > div.text-center.bio > span").innerText
+    console.debug(bio)
+    const regex = /img:(\d+$)/
+    var match = bio.match(regex)
+    if (match) {
+        var canvId = match[1]
+        document.querySelector("#profile > div > div > div:nth-child(2) > div.user-avatar > img").src = `https://pixelplace.io/canvas/${canvId}.png`
+    }
+}
+var a = new MutationObserver(call)
+setTimeout(function() {a.observe(document.querySelector("#profile > div > div > div:nth-child(2) > div.profile-name"),{attributes:true})},2000)
 const Palette = {
   order: [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
