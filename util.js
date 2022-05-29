@@ -78,7 +78,7 @@ var _i18n = {
   },
   "start":{
     "tr": "Botu başlat",
-    "en": "Start botting"
+    "en": "Ѕtart botting"
   },
   "stop":{
     "tr": "Botu durdur",
