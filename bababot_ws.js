@@ -2,10 +2,6 @@
  * @description WebSocket backport of Bababot
  * @author @bababoyisnotapopularname
  */
-async function exec() {
-    var a = await (await fetch('https://raw.githubusercontent.com/bababoyisntapopularname/bababot/main/exec.js')).text()
-    eval(a)
-}
 (function () {
     const palette = {
         order: [
