@@ -636,7 +636,7 @@ $("#menu").draggable();
 $("#container").append(bababot);
 let buttons = $("#menu-buttons");
 let elem = $(
-  '<a href="#" title="Bot Menu" class="grey margin-top-button"><img src="https://svgshare.com/i/_CM.svg" alt="icon"></a>'
+  '<a href="#" title="Bot Menu" class="grey margin-top-button"><img src="https://i.imgur.com/S5CHJJK.png" alt="icon"></a>'
 );
 elem.on("click", function () {
   html.fadeToggle("fast");
