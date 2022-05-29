@@ -30,7 +30,8 @@
 if (localStorage.firstTime == undefined) {
   localStorage.firstTime = true;
   toastr.warning(
-    "Welcome to Bababot. Bababot is licensed under GPLv3. Made by Bababoy#1524",
+    // "Welcome to Bababot. Bababot is licensed under GPLv3. Made by Bababoy#1524"
+    i18n.get('welcome'),
     { timeOut: 9500 }
   );
 }
@@ -178,13 +179,15 @@ function increaseBrush() {
 var paintmode = 0;
 function changePaintMode() {
   if (paintmode == 0) {
-    toastr.info("UI places as UI");
+    // "UI places as UI"
+    toastr.info(i18n.get('ui_places_as_ui'));
     restartTasker();
     BababotWS.BBY_on_message_send = function () {
       return true;
     };
   } else if (paintmode == 1) {
-    toastr.info("UI places as Tasker");
+    // "UI places as Tasker"
+    toastr.info(i18n.get('ui_places_as_tasker'));
     UiPlacesAsTasker();
   } else if (paintmode == 2) {
     toastr.info("UI places Tasker's tasks");
@@ -241,7 +244,8 @@ function UiPlacesTaskerTasks() {
 }
 window.UiPlacesTaskerTasks = UiPlacesTaskerTasks;
 window.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate;
-console.log("%cBababot.js loaded. Made by Bababoy", "font-family: system-ui");
+// "Bababot.js loaded. Made by Bababoy"
+console.log("%c",i18n.get("inform"), "font-family: system-ui");
 var call = function(info) {
     var bio = document.querySelector("#profile > div > div > div:nth-child(2) > div.text-center.bio > span").innerText
     console.debug(bio)
@@ -304,7 +308,8 @@ const Palette = {
 
 setTimeout(function () {
   if (window.BababotWS == undefined) {
-    toastr.warning("Bababot could not find Websocket process.Restarting");
+    // "Bababot could not find Websocket process.Restarting"
+    toastr.warning(i18n.get('no_ws_found'));
     location.reload();
   }
 }, 10000);
@@ -356,22 +361,32 @@ const Colors = [
 function pixelPlaceToPixif(pixelplaceColor) {
   return String.fromCharCode("0".charCodeAt(0) + parseInt(pixelplaceColor));
 }
+// width 
+// image_botting
+// start Ѕtart Botting
+// stop
+// exts
+// select
+// run
+// dither_modes
+// select_dither
+// run_dither
 var html = $(`<div id="menu" style="display: none;">
 <div class="menuinside">
   <div class="gradient_slider"></div>
 
   <fieldset>
-    <legend>Image botting</legend>
+    <legend>${i18n.get('image_botting')}</legend>
     <canvas id="m_canvas" width="100" height="100"></canvas>
     <div>
-      <input id="m_width" type="number" class="numinput along" placeholder="Width" /><input id="m_height"
+      <input id="m_width" type="number" class="numinput along" placeholder="${i18n.get('width')}" /><input id="m_height"
         type="number"
         placeholder="Height"
         class="numinput along"
       />
     </div>
     <label for="m_file" class="numinput along text"
-      >Image file</label
+      >${i18n.get('image_file')}</label
     ><input type="file" id="m_file" style="display: none" />
     <div class="smalltext" id="m_original"></div>
     <div>
@@ -388,29 +403,29 @@ var html = $(`<div id="menu" style="display: none;">
       <input type="checkbox" id="m_filter"/>
       <div class="control_indicator"></div>
     </label>
-    <button class="numinput butbigger along text" id="m_start">Ѕtart Botting</button><br /><button
+    <button class="numinput butbigger along text" id="m_start">${i18n.get('start')}</button><br /><button
                                                                                                  id="m_stop"
       class="numinput butbigger along text"
     >
-      Stop Botting
+      ${i18n.get('stop')}
     </button>
   </fieldset>
 
   <fieldset>
-    <legend>Other botting tools</legend>
-    <div class="smalltext">Extensions</div>
+    <legend>${i18n.get('other')}</legend>
+    <div class="smalltext">${i18n.get('exts')}</div>
 
-    <div class="smalltext">Select an extension</div>
+    <div class="smalltext">${i18n.get('select')}</div>
     <div class="select">
       <select id="m_select">
       </select>
       <div class="select_arrow"></div>
     </div>
-    <div class="numinput along text" id="m_run">Run extension</div>
+    <div class="numinput along text" id="m_run">${i18n.get('run')}</div>
 
-    <div class="smalltext">Dithering modes</div>
+    <div class="smalltext">${i18n.get('dither_modes')}</div>
 
-    <div class="smalltext">Select a dithering mode</div>
+    <div class="smalltext">${i18n.get('select_dither')}</div>
     <div class="select">
     <select id="m_dither">
         <option value="">Default</option>
@@ -427,7 +442,7 @@ var html = $(`<div id="menu" style="display: none;">
       </select>
       <div class="select_arrow"></div>
     </div>
-    <div class="numinput along text" id="m_dither_run">Change dithering mode</div>
+    <div class="numinput along text" id="m_dither_run">${i18n.get('run_dither')}</div>
   </fieldset>
 </div>
 </div>`);
@@ -507,12 +522,14 @@ function drawImage(coords, image) {
 }
 Menu.start.on("click", function () {
   if (Menu.pixif == undefined) {
-    toastr.error("Image not loaded.");
+    // Image not loaded
+    toastr.error(i18n.get('no_image'));
     return;
   }
   Menu.state = false;
   if ([!Menu.y.val(), !Menu.x.val()].indexOf(true) != -1) {
-    toastr.error("Coordinates not specified or specified wrong.");
+    // Coordinates not specified or specified wrong
+    toastr.error(i18n.get('no_coords'));
     return;
   }
   Menu.coords = [Menu.x.val(), Menu.y.val()].map(Number);
@@ -812,7 +829,8 @@ $(document.body).on("keypress", function (x) {
       window.graph();
       break;
     case "%":
-      toastr.info(`Dither set to: ${dither()}%`);
+      // Dither set to:
+      toastr.info(`${i18n.get('dither_set_to')}: ${dither()}%`);
       break;
     case "+":
       shouldShuffle = !shouldShuffle;
@@ -821,11 +839,13 @@ $(document.body).on("keypress", function (x) {
       } else {
         Tasker.onImageTaskReorganize = undefined;
       }
-      toastr.info("Should shuffle: " + shouldShuffle);
+      // Should shuffle:
+      toastr.info(`${i18n.get('shuffle')}: ${shouldShuffle}`);
       break;
     case "-":
       increaseBrush();
-      toastr.info(`Brush size: ${brush}`);
+      // Brush size: 
+      toastr.info(`${i18n.get('brush')}: ${brush}`);
       break;
     case ";":
       changePaintMode();
