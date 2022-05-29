@@ -459,7 +459,7 @@ function drawImage(coords, image) {
                 let [x, y] = args.coords;
                 x += xAxis;
                 y += yAxis;
-                const color = pixel.charCodeAt(0) - "0".charCodeAt(0);
+                var color = pixel.charCodeAt(0) - "0".charCodeAt(0);
                 if (color == 64) {
                     ${(localStorage.usetransparent == "true") ? "continue" : "color = 1"};
                 }
@@ -965,7 +965,7 @@ extensions.push([
       } else if (ascii == ".") {
         task.color = getSelectedColor();
       } else if (ascii == "*") {
-        task.color = color("white");
+        task.color = 0;
       } else {
         toastr.error("unexpected pixel");
       }
