@@ -122,7 +122,7 @@
                         }
                     }
                 })
-                Object.defineProperty(window, "BababotWS", {
+                Object.defineProperty(window, "SҬФPӺЦҪҜЇЙGШЇГЊԠЭ", {
                     value: this,
                 });
             }
