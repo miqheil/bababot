@@ -1071,6 +1071,7 @@ extensions.push([
     },
     "circledotting",
 ]);
+checkBan()
 extensions.push([
     function () {
         function coordinate(x, y, ox, oy) {
@@ -1118,7 +1119,7 @@ extensions.push([
     },
     "war",
 ]);
-
+checkBan()
 extensions.push([
     function () {
         var colors = Array.from(document.querySelector("#palette-buttons").children)
