@@ -25,8 +25,164 @@
 // @grant        none
 // ==/UserScript==
 
-/* globals toastr, interact, chroma, $, SҬФPӺЦҪҜЇЙGШЇГЊԠЭ, extensions, uBababot, Terminal */
+window.Bot = {}
+    const palette = {
+        order: [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+            21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+        ],
+        colors: [
+            "#FFFFFF",
+            "#C4C4C4",
+            "#888888",
+            "#555555",
+            "#222222",
+            "#000000",
+            "#006600",
+            "#22B14C",
+            "#02BE01",
+            "#51E119",
+            "#94E044",
+            "#FBFF5B",
+            "#E5D900",
+            "#E6BE0C",
+            "#E59500",
+            "#A06A42",
+            "#99530D",
+            "#633C1F",
+            "#6B0000",
+            "#9F0000",
+            "#E50000",
+            "#FF3904",
+            "#BB4F00",
+            "#FF755F",
+            "#FFC49F",
+            "#FFDFCC",
+            "#FFA7D1",
+            "#CF6EE4",
+            "#EC08EC",
+            "#820080",
+            "#5100FF",
+            "#020763",
+            "#0000EA",
+            "#044BFF",
+            "#6583CF",
+            "#36BAFF",
+            "#0083C7",
+            "#00D3DD",
+            "#45FFC8",
+        ],
+    };
 
+    /**
+   * @param {number} x
+   * @param {number} y
+   * @param {number} sizeX
+   * @param {number} sizeY
+   * @returns {Uint8ClampedArray}
+   */
+    function getPixelArray(x, y, sizeX, sizeY) {
+        /**
+     * @type {CanvasRenderingContext2D}
+     */
+        let ctx = canvas.getContext("2d");
+        return ctx.getImageData(x, y, sizeX, sizeY).data;
+    }
+
+    /**
+   * @param {number} r
+   * @param {number} g
+   * @param {number} b
+   * @returns {number}
+   */
+    function resolveRGB(r, g, b) {
+        let hexStr =
+            "#" +
+            ("000000" + ((r << 16) | (g << 8) | b).toString(16))
+        .slice(-6)
+        .toUpperCase(); /*thx stackoverflow*/
+        return palette.colors.findIndex(function (elem) {
+            return elem.toUpperCase() === hexStr;
+        });
+    }
+
+    /**
+   * @param {number} x
+   * @param {number} y
+   * @returns {number}
+   */
+    function getPixel(x, y) {
+        const imgData = getPixelArray(x, y, 1, 1);
+        const r = imgData[0];
+        const g = imgData[1];
+        const b = imgData[2];
+        return resolveRGB(r, g, b);
+    }
+    Object.defineProperty(window, "WebSocket", {
+        value: class extends WebSocket {
+            $callbacks = {}
+            trusted_code = undefined
+            constructor(url, header) {
+                super(url, header);
+                this.BBY_on_message_send = function() {return true}
+                let original = this.send
+                this.send = (...args) => {
+                    if (!this.BBY_on_message_send(...args)) {
+                        return
+                    }
+                    return original.apply(this, args)
+                }
+                this.addEventListener('message',message => {
+                    if (message.data.indexOf('42') == -1) {
+                        return
+                    }
+                    let json = JSON.parse(message.data.replace('42',''))
+                    let code = json[0]
+                    let content = json[1]
+                    if (this.$callbacks[code]) {
+                        for (const callback of this.$callbacks[code]) {
+                            callback(content)
+                        }
+                    }
+                })
+                Object.defineProperty(window.Bot, "BababotWS", {
+                    value: this,
+                });
+            }
+            BBY_on(code,callback) {
+                this.$callbacks[code] = this.$callbacks[code] || []
+                this.$callbacks[code].push(callback)
+            }
+            BBY_emit(msg, props) {
+                if (this.readyState != this.OPEN) {
+                    return;
+                }
+                this.trusted_code = `42${JSON.stringify([msg, props])}`
+                this.send(this.trusted_code);
+            }
+            BBY_put_pixel(x, y, color) {
+                this.BBY_emit("p", [x, y, color, 1]);
+            }
+            BBY_get_pixel(x, y) {
+                return getPixel(x, y);
+            }
+            BBY_send_chat(msg, full) {
+                let packet = {
+                    text: msg,
+                    mention: "",
+                    type: "global",
+                    target: "",
+                    color: 11,
+                };
+
+                packet = { ...packet, ...full };
+
+                this.BBY_emit("chat.message", packet);
+            }
+        },
+
+        writable: false,
+    });
 if (localStorage.firstTime == undefined) {
     localStorage.firstTime = true;
     toastr.warning(
@@ -36,7 +192,7 @@ if (localStorage.firstTime == undefined) {
     );
 }
 localStorage.timeout = localStorage.timeout || 40;
-window.extensions = window.extensions || [];
+window.Bot.extensions = window.Bot.extensions || [];
 
 function createWorker(code) {
     return new Worker(
@@ -54,15 +210,15 @@ uBababot.cImport(
     "https://raw.githubusercontent.com/bababoyy/bababot/main/menu.css"
 );
 
-class GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFactory {
+class TaskerFactory {
     static EMPTY_FUNCTION = () => true;
     static PREVENT_DEFAULT = false;
     constructor() {
         this._tasks = [];
         this.onImageTaskReorganize = undefined;
         this._i = 0x0;
-        this.onTaskAction = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFactory.EMPTY_FUNCTION;
-        this.onShuffleGranted = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFactory.EMPTY_FUNCTION;
+        this.onTaskAction = TaskerFactory.EMPTY_FUNCTION;
+        this.onShuffleGranted = TaskerFactory.EMPTY_FUNCTION;
     }
     addTask(callback) {
         this._tasks.push(callback);
@@ -87,7 +243,7 @@ class GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFactory {
         this.reset();
     }
 }
-let GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ = new GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFactory();
+let Tasker = new TaskerFactory();
 var counter = 0;
 /**
  * Shuffles array in place.
@@ -105,36 +261,36 @@ function shuffle(a) {
 }
 var shouldShuffle = false;
 var intervalCode;
-window.intervalCode = intervalCode;
-function restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ() {
+window.Bot.intervalCode = intervalCode;
+function restartTasker() {
     clearInterval(intervalCode);
     intervalCode = setInterval(function () {
-        let task = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.getTask();
+        let task = Tasker.getTask();
         if (task == undefined) {
-            GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction(undefined);
-            if (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._i != 0) {
-                GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.destroy();
+            Tasker.onTaskAction(undefined);
+            if (Tasker._i != 0) {
+                Tasker.destroy();
             }
             return;
         }
         while (
-            GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction(task) == GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFactory.PREVENT_DEFAULT ||
-            SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_get_pixel(task.x, task.y) == task.color
+            Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT ||
+            Bot.BababotWS.BBY_get_pixel(task.x, task.y) == task.color
         ) {
-            task = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.getTask();
-            GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.on_task && GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.on_task(task);
+            task = Tasker.getTask();
+            Tasker.on_task && Tasker.on_task(task);
             if (task == undefined) {
-                if (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._i != 0) {
-                    GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.destroy();
+                if (Tasker._i != 0) {
+                    Tasker.destroy();
                 }
                 return;
             }
         }
         if (task.mode == undefined) {
-            SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_put_pixel(task.x, task.y, task.color);
+            Bot.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
             counter++;
         } else {
-            SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_emit("p", [
+            Bot.BababotWS.BBY_emit("p", [
                 task.x,
                 task.y,
                 task.color,
@@ -145,23 +301,23 @@ function restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ() {
         }
     }, localStorage.timeout);
 }
-window.restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ = restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ;
+window.Bot.restartTasker = restartTasker;
 
-function killGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ() {
+function killTasker() {
     clearInterval(intervalCode);
     intervalCode = undefined;
 }
-window.killGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ = killGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ;
-restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ();
+window.Bot.killTasker = killTasker;
+restartTasker();
 /*
 Take the possibility as:
 a
 - == a/b
 b
 */
-window.multiBotDitherMode = true;
-function GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFilterPixelsByCoordinate(a, b) {
-    GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+window.Bot.multiBotDitherMode = true;
+function TaskerFilterPixelsByCoordinate(a, b) {
+    Tasker.onTaskAction = function (task) {
         if (task == undefined) return;
         return multiBotDitherMode
             ? (task.x + task.y) % b < a
@@ -180,33 +336,33 @@ function changePaintMode() {
     if (paintmode == 0) {
         // "UI places as UI"
         toastr.info(i18n.get('ui_places_as_ui'));
-        restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ();
-        SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_on_message_send = function () {
+        restartTasker();
+        Bot.BababotWS.BBY_on_message_send = function () {
             return true;
         };
     } else if (paintmode == 1) {
-        // "UI places as GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ"
+        // "UI places as Tasker"
         toastr.info(i18n.get('ui_places_as_tasker'));
-        UiPlacesAsGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ();
+        UiPlacesAsTasker();
     } else if (paintmode == 2) {
         toastr.info("UI places Tasker's tasks");
-        UiPlacesGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄTasks();
+        UiPlacesTaskerTasks();
     }
     paintmode++;
     if (paintmode > 2) {
         paintmode = 0;
     }
 }
-function UiPlacesAsGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ() {
-    restartGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ();
-    SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_on_message_send = function (msg) {
-        if (msg == SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.trusted_code) return true;
+function UiPlacesAsTasker() {
+    restartTasker();
+    Bot.BababotWS.BBY_on_message_send = function (msg) {
+        if (msg == Bot.BababotWS.trusted_code) return true;
         if (msg.indexOf("42") == -1) return true;
         let [key, val] = JSON.parse(msg.replace("42", ""));
         if (key == "p") {
             for (let i = 0; i < brush; i++) {
                 for (let j = 0; j < brush; j++) {
-                    GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.addTask({ x: val[0] + i, y: val[1] + j, color: val[2] });
+                    Tasker.addTask({ x: val[0] + i, y: val[1] + j, color: val[2] });
                 }
             }
             return false;
@@ -214,25 +370,25 @@ function UiPlacesAsGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ() {
         return true;
     };
 }
-window.UiPlacesAsGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ = UiPlacesAsGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ;
+window.Bot.UiPlacesAsTasker = UiPlacesAsTasker;
 
-function UiPlacesGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄTasks() {
-    killGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ();
-    SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_on_message_send = function (msg) {
-        if (msg == SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.trusted_code) return true;
+function UiPlacesTaskerTasks() {
+    killTasker();
+    Bot.BababotWS.BBY_on_message_send = function (msg) {
+        if (msg == Bot.BababotWS.trusted_code) return true;
         if (msg.indexOf("42") == -1) return true;
         let [key, val] = JSON.parse(msg.replace("42", ""));
         if (key == "p") {
             for (let i = 0; i < brush; i++) {
                 for (let j = 0; j < brush; j++) {
-                    let task = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks.find(
+                    let task = Tasker._tasks.find(
                         (a) => a.x == val[0] + i && a.y == val[1] + j
                     );
                     if (task) {
-                        SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_put_pixel(task.x, task.y, task.color);
+                        Bot.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
                         counter++;
-                        let index = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks.indexOf(task);
-                        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks.splice(index, 1);
+                        let index = Tasker._tasks.indexOf(task);
+                        Tasker._tasks.splice(index, 1);
                     }
                     return false;
                 }
@@ -241,8 +397,8 @@ function UiPlacesGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄTasks() {
         return true;
     };
 }
-window.UiPlacesGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄTasks = UiPlacesGФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄTasks;
-window.GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFilterPixelsByCoordinate = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFilterPixelsByCoordinate;
+window.Bot.UiPlacesTaskerTasks = UiPlacesTaskerTasks;
+window.Bot.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate;
 // "Bababot.js loaded. Made by Bababoy"
 console.log("%c",i18n.get("inform"), "font-family: system-ui");
 var call = function(info) {
@@ -306,7 +462,7 @@ const Palette = {
 };
 
 setTimeout(function () {
-    if (window.SҬФPӺЦҪҜЇЙGШЇГЊԠЭ == undefined) {
+    if (window.Bot.BababotWS == undefined) {
         // "Bababot could not find Websocket process.Restarting"
         toastr.warning(i18n.get('no_ws_found'));
         location.reload();
@@ -453,7 +609,7 @@ const Menu = {
     rds: undefined,
     intervalCode: undefined,
 };
-window.Menu = Menu;
+window.Bot.Menu = Menu;
 /**
  * @param {[Number,Number]} coords
  * @param {Array.<Array.<String>>} image
@@ -485,21 +641,21 @@ function drawImage(coords, image) {
     }`);
     worker_tasks.onmessage = function (tasks_raw) {
         var tasks = tasks_raw.data;
-        tasks.forEach((task) => GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.addTask(task));
-        if (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize) {
-            GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize(GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks, [
+        tasks.forEach((task) => Tasker.addTask(task));
+        if (Tasker.onImageTaskReorganize) {
+            Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks, [
                 image[0].length,
                 image.length,
             ]);
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+        Tasker.onTaskAction = function (task) {
             if (task == undefined) {
-                tasks.forEach((task) => GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.addTask(task));
+                tasks.forEach((task) => Tasker.addTask(task));
             }
         };
         delete worker_tasks;
     };
-    if (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._i != 0) {
+    if (Tasker._i != 0) {
         return;
     }
     worker_tasks.postMessage({ coords: coords, image: image });
@@ -521,7 +677,7 @@ Menu.start.on("click", function () {
     if (intervalCode == undefined) {
         var context = canvas.getContext("2d");
         var children = $("#palette-buttons").children();
-        for (let task of GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks) {
+        for (let task of Tasker._tasks) {
             var color = chroma(children[task.color].title + "7F").css();
             context.fillStyle = color;
             context.fillRect(task.x, task.y, 1, 1);
@@ -529,8 +685,8 @@ Menu.start.on("click", function () {
     }
 });
 Menu.stop.on("click", function () {
-    GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = () => true;
-    GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.destroy();
+    Tasker.onTaskAction = () => true;
+    Tasker.destroy();
 });
 Menu.file.on("change", function () {
     let reader = new FileReader();
@@ -660,7 +816,7 @@ document.onpaste = function (event) {
 function extension_load() {
     if ($("#PЯДԐSЄЙҐДҪҪЦЯSЏSФDЇФ_select option").length != 0) return;
     $("#PЯДԐSЄЙҐДҪҪЦЯSЏSФDЇФ_select option").remove();
-    for (let extension of window.extensions) {
+    for (let extension of window.Bot.extensions) {
         var option = $("<option>").html(extension[1]);
         Menu.extensions_list.append(option);
     }
@@ -668,7 +824,7 @@ function extension_load() {
 setInterval(extension_load, 30_000);
 setTimeout(extension_load, 5_000);
 Menu.extension_run.on("click", function () {
-    window.extensions.find((a) => a[1] == Menu.extensions_list.val())[0]();
+    window.Bot.extensions.find((a) => a[1] == Menu.extensions_list.val())[0]();
 });
 Menu.dither_run.on("click", function () {
     localStorage.kernel = Menu.dither_list.val();
@@ -676,7 +832,7 @@ Menu.dither_run.on("click", function () {
 });
 Menu.dither_list.val(localStorage.kernel);
 function createGraphWindow() {
-    var ctx = window.open("", "", "width=550,height=450");
+    var ctx = window.Bot.open("", "", "width=550,height=450");
     var interval = undefined;
     ctx.onunload = function () {
         clearInterval(interval);
@@ -736,7 +892,7 @@ function createGraphWindow() {
     }, 1000);
 }
 
-window.graph = createGraphWindow;
+window.Bot.graph = createGraphWindow;
 /**
  * @type {Window[]}
  */
@@ -750,7 +906,7 @@ function getSelectedColor() {
         ).attr("data-id") - 0
     );
 }
-window.getSelectedColor = getSelectedColor;
+window.Bot.getSelectedColor = getSelectedColor;
 var dither = (function () {
     var i = 10;
     return function decrease() {
@@ -758,7 +914,7 @@ var dither = (function () {
         if (i <= 0) {
             i = 10;
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄFilterPixelsByCoordinate(i, 10);
+        TaskerFilterPixelsByCoordinate(i, 10);
         return i * 10;
     };
 })();
@@ -771,7 +927,7 @@ $(document.body).on("keypress", function (x) {
     }
     switch (x.key) {
         case "_":
-            window.graph();
+            window.Bot.graph();
             break;
         case "%":
             // Dither set to:
@@ -780,9 +936,9 @@ $(document.body).on("keypress", function (x) {
         case "+":
             shouldShuffle = !shouldShuffle;
             if (shouldShuffle) {
-                GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = shuffle;
+                Tasker.onImageTaskReorganize = shuffle;
             } else {
-                GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = undefined;
+                Tasker.onImageTaskReorganize = undefined;
             }
             // Should shuffle:
             toastr.info(`${i18n.get('shuffle')}: ${shouldShuffle}`);
@@ -928,7 +1084,7 @@ function process() {
         kernel: localStorage.kernel,
     });
 }
-window.extensions = window.extensions || [];
+window.Bot.extensions = window.Bot.extensions || [];
 var amogus = `______
 __..._
 _..**_
@@ -939,13 +1095,13 @@ ______`.split("\n");
 
 function filter(tasks) {
     return tasks.filter(
-        (x) => x.color != SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_get_pixel(x.x, x.y) && x.color != -1
+        (x) => x.color != Bot.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
     );
 }
 
-extensions.push([
+window.Bot.extensions.push([
     () =>
-    (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+    (Tasker.onTaskAction = function (task) {
         if (task == undefined) return;
         let chunkCoord = [
             Math.floor(task.x / amogus[0].length) * amogus[0].length,
@@ -967,9 +1123,9 @@ extensions.push([
     "amogus",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     () =>
-    (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+    (Tasker.onTaskAction = function (task) {
         if (task == undefined) return;
         task.color = parseInt(["35", "26", "0", "26", "35"][task.y % 5]);
         return true;
@@ -977,9 +1133,9 @@ extensions.push([
     "trans",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     () =>
-    (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+    (Tasker.onTaskAction = function (task) {
         if (task == undefined) return;
         task.color = parseInt(["20", "14", "12", "8", "33", "29"][task.y % 6]);
         return true;
@@ -987,9 +1143,9 @@ extensions.push([
     "lgbt",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     () =>
-    (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+    (Tasker.onTaskAction = function (task) {
         if (task == undefined) return;
         task.color = parseInt(["27", "26", "0", "37", "0", "26"][task.y % 6]);
         return true;
@@ -997,24 +1153,24 @@ extensions.push([
     "femboy",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     function () {
         var rectsize = 2;
-        window.rectsize = rectsize;
+        window.Bot.rectsize = rectsize;
         function ontask(task) {
             return (
                 task != undefined &&
                 (task.y % (rectsize + 1) == 0 || task.x % (rectsize + 1) >= rectsize)
             );
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = ontask;
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = function (tasks) {
+        Tasker.onTaskAction = ontask;
+        Tasker.onImageTaskReorganize = function (tasks) {
             return tasks.filter(ontask);
         };
     },
     "┼ styled pixelating",
 ]);
-extensions.push([
+window.Bot.extensions.push([
     function () {
         /**
      * Shuffles array in place.
@@ -1030,7 +1186,7 @@ extensions.push([
             }
             return a;
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = function (tasks) {
+        Tasker.onImageTaskReorganize = function (tasks) {
             tasks = shuffle(tasks);
             tasks = filter(tasks);
             // change pixelradius from localstorage or keep it as 5
@@ -1072,12 +1228,12 @@ extensions.push([
     "circledotting",
 ]);
 checkBan()
-extensions.push([
+window.Bot.extensions.push([
     function () {
         function coordinate(x, y, ox, oy) {
             return [Math.abs(x - ox), Math.abs(y - oy)];
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = function (tasks, width, height, cx, cy) {
+        Tasker.onImageTaskReorganize = function (tasks, width, height, cx, cy) {
             var [originX, originY] = [
                 Math.floor(width / 2) + cx,
                 Math.floor(height / 2) + cy,
@@ -1093,7 +1249,7 @@ extensions.push([
     "circlefilling",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     function () {
         var colors = Array.from(document.querySelector("#palette-buttons").children)
         .filter((x) => x.className != "disabled")
@@ -1101,12 +1257,12 @@ extensions.push([
         function ontask(task) {
             return task;
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+        Tasker.onTaskAction = function (task) {
             if (task == undefined) return;
             task.color = colors[Math.floor(Math.random() * colors.length)];
             return true;
         };
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = function (tasks) {
+        Tasker.onImageTaskReorganize = function (tasks) {
             if (!tasks || tasks.length == 0) {
                 return [];
             }
@@ -1120,7 +1276,7 @@ extensions.push([
     "war",
 ]);
 checkBan()
-extensions.push([
+window.Bot.extensions.push([
     function () {
         var colors = Array.from(document.querySelector("#palette-buttons").children)
         .filter((x) => x.className != "disabled")
@@ -1128,12 +1284,12 @@ extensions.push([
         function ontask(task) {
             return task;
         }
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = function (task) {
+        Tasker.onTaskAction = function (task) {
             if (task == undefined) return;
             task.color = colors[Math.floor(Math.random() * colors.length)];
             return true;
         };
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = function (tasks) {
+        Tasker.onImageTaskReorganize = function (tasks) {
             if (!tasks || tasks.length == 0) {
                 return [];
             }
@@ -1149,15 +1305,15 @@ extensions.push([
     "war in one pixel",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     function () {
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onTaskAction = () => true;
-        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize = undefined;
+        Tasker.onTaskAction = () => true;
+        Tasker.onImageTaskReorganize = undefined;
     },
     "Normalize Tasker events",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     function () {
         function getCoordinate() {
             let raw = $("#coordinates").text();
@@ -1182,11 +1338,11 @@ extensions.push([
                                 return end_coordinate[0] - x + start_coordinate[0];
                             }
                         })();
-                        const canvas_color = SҬФPӺЦҪҜЇЙGШЇГЊԠЭ.BBY_get_pixel(mvpModeX, y);
+                        const canvas_color = Bot.BababotWS.BBY_get_pixel(mvpModeX, y);
                         if (canvas_color == color || canvas_color == -1) {
                             continue;
                         }
-                        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.addTask({
+                        Tasker.addTask({
                             // @TODO Tasker
                             x: mvpModeX,
                             y: y,
@@ -1194,9 +1350,9 @@ extensions.push([
                         });
                     }
                 }
-                if (GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize) {
-                    GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks = GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ.onImageTaskReorganize(
-                        GФҐФЊЭLLJҪԠSДЍDФЩԠЇИҪЄ._tasks,
+                if (Tasker.onImageTaskReorganize) {
+                    Tasker._tasks = Tasker.onImageTaskReorganize(
+                        Tasker._tasks,
                         end_coordinate[0] - start_coordinate[0],
                         end_coordinate[1] - start_coordinate[1],
                         ...start_coordinate
@@ -1214,7 +1370,7 @@ extensions.push([
     "fill",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     function () {
         var timeout = prompt(
             "Your timeout is " +
@@ -1229,7 +1385,7 @@ extensions.push([
     "Set timeout",
 ]);
 
-extensions.push([
+window.Bot.extensions.push([
     function () {
         var name = prompt("Go to user:");
         $($('.messages div a[class="user open-profile"]')[0])
