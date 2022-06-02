@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         Bababot.js
 // @namespace    https://github.com/bababoyy
-// @version      v3.1fix
+// @version      v3.2fix
 // @license      GPLv3
 // @description  Bababot
 // @author       Bababoy
@@ -423,7 +423,7 @@ function restartTasker() {
     }
     while (
       Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT ||
-      Bot.BababotWS.BBY_get_pixel(task.x, task.y) == task.color
+      BababotScope.BababotWS.BBY_get_pixel(task.x, task.y) == task.color
     ) {
       task = Tasker.getTask();
       Tasker.on_task && Tasker.on_task(task);
@@ -435,10 +435,10 @@ function restartTasker() {
       }
     }
     if (task.mode == undefined) {
-      Bot.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
+      BababotScope.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
       counter++;
     } else {
-      Bot.BababotWS.BBY_emit("p", [
+      BababotScope.BababotWS.BBY_emit("p", [
         task.x,
         task.y,
         task.color,
@@ -485,7 +485,7 @@ function changePaintMode() {
     // "UI places as UI"
     toastr.info(i18n.get("ui_places_as_ui"));
     restartTasker();
-    Bot.BababotWS.BBY_on_message_send = function () {
+    BababotScope.BababotWS.BBY_on_message_send = function () {
       return true;
     };
   } else if (paintmode == 1) {
@@ -503,8 +503,8 @@ function changePaintMode() {
 }
 function UiPlacesAsTasker() {
   restartTasker();
-  Bot.BababotWS.BBY_on_message_send = function (msg) {
-    if (msg == Bot.BababotWS.trusted_code) return true;
+  BababotScope.BababotWS.BBY_on_message_send = function (msg) {
+    if (msg == BababotScope.BababotWS.trusted_code) return true;
     if (msg.indexOf("42") == -1) return true;
     let [key, val] = JSON.parse(msg.replace("42", ""));
     if (key == "p") {
@@ -522,8 +522,8 @@ BababotScope.UiPlacesAsTasker = UiPlacesAsTasker;
 
 function UiPlacesTaskerTasks() {
   killTasker();
-  Bot.BababotWS.BBY_on_message_send = function (msg) {
-    if (msg == Bot.BababotWS.trusted_code) return true;
+  BababotScope.BababotWS.BBY_on_message_send = function (msg) {
+    if (msg == BababotScope.BababotWS.trusted_code) return true;
     if (msg.indexOf("42") == -1) return true;
     let [key, val] = JSON.parse(msg.replace("42", ""));
     if (key == "p") {
@@ -533,7 +533,7 @@ function UiPlacesTaskerTasks() {
             (a) => a.x == val[0] + i && a.y == val[1] + j
           );
           if (task) {
-            Bot.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
+            BababotScope.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
             counter++;
             let index = Tasker._tasks.indexOf(task);
             Tasker._tasks.splice(index, 1);
@@ -1264,7 +1264,7 @@ ______`.split("\n");
 
 function filter(tasks) {
   return tasks.filter(
-    (x) => x.color != Bot.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
+    (x) => x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
   );
 }
 
@@ -1507,7 +1507,7 @@ BababotScope.extensions.push([
                 return end_coordinate[0] - x + start_coordinate[0];
               }
             })();
-            const canvas_color = Bot.BababotWS.BBY_get_pixel(mvpModeX, y);
+            const canvas_color = BababotScope.BababotWS.BBY_get_pixel(mvpModeX, y);
             if (canvas_color == color || canvas_color == -1) {
               continue;
             }
