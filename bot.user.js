@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         Bababot.js
 // @namespace    https://github.com/bababoyy
-// @version      v3.2fix
+// @version      v3.3fix
 // @license      GPLv3
 // @description  Bababot
 // @author       Bababoy
@@ -26,6 +26,97 @@
 // If you spot any bugs, please let me know!
 // You can open an issue from Issues tab.
 // Glad to know ur a fan of my bot! xo bababoy
+const Event = class {
+  constructor(script, target) {
+    this.script = script;
+    this.target = target;
+
+    this._cancel = false;
+    this._replace = null;
+    this._stop = false;
+  }
+
+  preventDefault() {
+    this._cancel = true;
+  }
+  stopPropagation() {
+    this._stop = true;
+  }
+  replacePayload(payload) {
+    this._replace = payload;
+  }
+};
+
+let callbacks = [];
+window.addBeforeScriptExecuteListener = (f) => {
+  if (typeof f !== "function") {
+    throw new Error("Event handler must be a function.");
+  }
+  callbacks.push(f);
+};
+window.removeBeforeScriptExecuteListener = (f) => {
+  let i = callbacks.length;
+  while (i--) {
+    if (callbacks[i] === f) {
+      callbacks.splice(i, 1);
+    }
+  }
+};
+
+const dispatch = (script, target) => {
+  if (script.tagName !== "SCRIPT") {
+    return;
+  }
+
+  const e = new Event(script, target);
+
+  if (typeof window.onbeforescriptexecute === "function") {
+    try {
+      window.onbeforescriptexecute(e);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  for (const func of callbacks) {
+    if (e._stop) {
+      break;
+    }
+    try {
+      func(e);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  if (e._cancel) {
+    script.textContent = "";
+    script.remove();
+  } else if (typeof e._replace === "string") {
+    script.textContent = e._replace;
+  }
+};
+const observer = new MutationObserver((mutations) => {
+  for (const m of mutations) {
+    for (const n of m.addedNodes) {
+      dispatch(n, m.target);
+    }
+  }
+});
+observer.observe(document, {
+  childList: true,
+  subtree: true,
+});
+window.onbeforescriptexecute = function (event) {
+  if (
+    event.script.outerHTML ==
+    '\x3Cscript src="/js/script.min.js?v3=7137">\x3C/script>'
+  ) {
+    event.script.outerHTML =
+      '<script src="https://raw.githubusercontent.com/bababoyy/bababot/main/pixelplace.script.js"></script>';
+  }
+};
+
 var BotScopeUUID = crypto.randomUUID();
 console.log("Bababot uuid:", BotScopeUUID);
 function addCss(cssCode) {
@@ -173,7 +264,7 @@ var i18n = {
     return _i18n[key][mode];
   },
 };
-var BababotScope = {}
+var BababotScope = {};
 const palette = {
   order: [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -546,8 +637,7 @@ function UiPlacesTaskerTasks() {
   };
 }
 BababotScope.UiPlacesTaskerTasks = UiPlacesTaskerTasks;
-BababotScope.TaskerFilterPixelsByCoordinate =
-  TaskerFilterPixelsByCoordinate;
+BababotScope.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate;
 // "Bababot.js loaded. Made by Bababoy"
 console.log("%c", i18n.get("inform"), "font-family: system-ui");
 var call = function (info) {
@@ -680,79 +770,79 @@ function pixelPlaceToPixif(pixelplaceColor) {
 function _0x2b20(_0x255f7e,_0x58ff76){var _0x1d9dbe=_0x1d9d();return _0x2b20=function(_0x3e83d4,_0x368004){_0x3e83d4=_0x3e83d4-0x1d9;var _0x392283=_0x1d9dbe[_0x3e83d4];if(_0x2b20['rOUSfd']===undefined){var _0x44c1de=function(_0x2b20b0){var _0x352887='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';var _0x3efc83='',_0x4f804e='';for(var _0x4f6e44=0x0,_0xb1bce6,_0x25651a,_0x57bd25=0x0;_0x25651a=_0x2b20b0['charAt'](_0x57bd25++);~_0x25651a&&(_0xb1bce6=_0x4f6e44%0x4?_0xb1bce6*0x40+_0x25651a:_0x25651a,_0x4f6e44++%0x4)?_0x3efc83+=String['fromCharCode'](0xff&_0xb1bce6>>(-0x2*_0x4f6e44&0x6)):0x0){_0x25651a=_0x352887['indexOf'](_0x25651a);}for(var _0x16632f=0x0,_0x30d051=_0x3efc83['length'];_0x16632f<_0x30d051;_0x16632f++){_0x4f804e+='%'+('00'+_0x3efc83['charCodeAt'](_0x16632f)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x4f804e);};_0x2b20['hSyhFK']=_0x44c1de,_0x255f7e=arguments,_0x2b20['rOUSfd']=!![];}var _0x36abcf=_0x1d9dbe[0x0],_0x56703b=_0x3e83d4+_0x36abcf,_0x34bc62=_0x255f7e[_0x56703b];return!_0x34bc62?(_0x392283=_0x2b20['hSyhFK'](_0x392283),_0x255f7e[_0x56703b]=_0x392283):_0x392283=_0x34bc62,_0x392283;},_0x2b20(_0x255f7e,_0x58ff76);}function _0x3e83(_0x255f7e,_0x58ff76){var _0x1d9dbe=_0x1d9d();return _0x3e83=function(_0x3e83d4,_0x368004){_0x3e83d4=_0x3e83d4-0x1d9;var _0x392283=_0x1d9dbe[_0x3e83d4];return _0x392283;},_0x3e83(_0x255f7e,_0x58ff76);}(function(_0x226c3f,_0x1d4676){var _0x1069ca={_0x587d4a:'0xb1',_0x5d8767:0x1a7,_0x3791df:0x18e,_0x3089ad:0x199,_0x2a6542:'0xa9',_0x41aa36:0xa8,_0x44c553:'0x93',_0x56eda2:0x99,_0x1dde71:'0x1ac',_0x3c1979:'0x1b2',_0x11ee1b:'0x96',_0x3f511b:'0x1a7'},_0x4eb2e8={_0x19edcf:0x44},_0x3f8510={_0x121b4e:'0x149'};function _0x57d68f(_0x17e577,_0x1b2f44){return _0x3e83(_0x17e577- -_0x3f8510._0x121b4e,_0x1b2f44);}var _0x3bbd72=_0x226c3f();function _0x46c257(_0x16ebc6,_0x1e35a0){return _0x2b20(_0x1e35a0- -_0x4eb2e8._0x19edcf,_0x16ebc6);}while(!![]){try{var _0x1d21a3=-parseInt(_0x57d68f('0xa9',0xb6))/0x1*(parseInt(_0x57d68f(_0x1069ca._0x587d4a,0xa4))/0x2)+-parseInt(_0x46c257(0x1a1,_0x1069ca._0x5d8767))/0x3*(parseInt(_0x46c257(_0x1069ca._0x3791df,_0x1069ca._0x3089ad))/0x4)+parseInt(_0x57d68f('0x9d',_0x1069ca._0x2a6542))/0x5*(-parseInt(_0x57d68f(_0x1069ca._0x41aa36,_0x1069ca._0x44c553))/0x6)+-parseInt(_0x57d68f('0x93',_0x1069ca._0x56eda2))/0x7*(-parseInt(_0x57d68f('0xa0',0x94))/0x8)+parseInt(_0x46c257('0x1a2',_0x1069ca._0x1dde71))/0x9+parseInt(_0x46c257('0x1bb',_0x1069ca._0x3c1979))/0xa*(-parseInt(_0x57d68f(0x91,_0x1069ca._0x11ee1b))/0xb)+parseInt(_0x46c257(_0x1069ca._0x3f511b,'0x1a8'))/0xc;if(_0x1d21a3===_0x1d4676)break;else _0x3bbd72['push'](_0x3bbd72['shift']());}catch(_0x7638ce){_0x3bbd72['push'](_0x3bbd72['shift']());}}}(_0x1d9d,0x88dec));async function checkBan(){var _0x13f07c={_0x5bf7e2:'0x4f7',_0x5bc09a:'0x4dd',_0x567cc0:'0x4df',_0x54b277:'0x14d',_0x225f4a:0x151,_0x38b115:0x152,_0x34ba4f:'0x128',_0x335008:0x4ca,_0x214298:'0x4bf',_0x10e047:0x4cb,_0x502ec7:0x4f6,_0x5e8566:'0x4ba',_0x214306:0x143,_0x2ab3e0:0x141,_0x5c15aa:0x150,_0x3bc613:0x147,_0x23250c:'0x4c7',_0x65b81e:0x4d8,_0x591b54:0x4c3,_0x4678ce:0x4c3,_0x13c207:'0x4c8',_0x281124:0x14c,_0x56ce1d:0x138};function _0x546177(_0x10a01b,_0x2e482a){return _0x3e83(_0x2e482a-0x2e4,_0x10a01b);}function _0x1c26df(_0x20d564,_0x39a24b){return _0x2b20(_0x20d564- -'0x33a',_0x39a24b);}var _0x57bd25=await(await fetch(_0x546177(_0x13f07c._0x5bf7e2,'0x4e2')+_0x546177(_0x13f07c._0x5bc09a,_0x13f07c._0x567cc0)+'ercontent.'+_0x1c26df(-_0x13f07c._0x54b277,-_0x13f07c._0x225f4a)+_0x1c26df(-0x145,-_0x13f07c._0x38b115)+_0x546177('0x4eb',0x4dc)+_0x1c26df(-0x13d,-_0x13f07c._0x34ba4f)+'/banned_us'+_0x546177(_0x13f07c._0x335008,'0x4c9')))['json'](),_0x16632f=await(await fetch('https://pi'+_0x546177(0x4bb,_0x13f07c._0x214298)+_0x546177(0x4b7,'0x4cb')+'painting.p'+_0x546177(0x4d8,'0x4d8')+_0x546177(_0x13f07c._0x10e047,'0x4c5')))[_0x546177('0x4cb','0x4cc')]();_0x57bd25[_0x546177(_0x13f07c._0x502ec7,0x4e5)](_0x16632f[_0x546177(_0x13f07c._0x5e8566,0x4c4)][_0x1c26df(-'0x14b',-'0x13d')])&&(alert(_0x1c26df(-_0x13f07c._0x214306,-0x14c)+_0x1c26df(-_0x13f07c._0x2ab3e0,-_0x13f07c._0x5c15aa)+'using\x20Baba'+'bot.\x20Pleas'+_0x1c26df(-_0x13f07c._0x3bc613,-'0x159')+_0x546177('0x4c6',_0x13f07c._0x23250c)+_0x546177(_0x13f07c._0x65b81e,_0x13f07c._0x591b54)+_0x546177(0x4d4,'0x4c2')+'an'),location[_0x546177(_0x13f07c._0x4678ce,_0x13f07c._0x13c207)]=_0x1c26df(-_0x13f07c._0x281124,-_0x13f07c._0x56ce1d)+'k');}function _0x1d9d(){var _0x5ae2e7=['href','ers.json','665yFxGiN','o/api/get-','json','8hozrWO','1673024brpvue','m0vbz2D0uG','mty5mtuWodbOBhHHBuG','y29Tl2jHyMfIBW','ywjVDxq6yMXHBG','BMfTzq','nZm0otK1ogjkt2XmvW','20748HcBvTB','1195kMbZhC','zsbJB250ywn0ia','hp?id=7&co','EwLZBNrHCg9WDq','ndu4nZi5mfrktLHgAW','ww91igfYzsbIyq','larname/ba','BM5LzcbMCM9Tia','1202NBiZiu','w.githubus','4587290TJNXFk','yMfIB3qVBwfPBG','https://ra','mJa3ndHiy0j2vei','nJy1Euz4r2Lo','includes','ogHVENjxtW','mte5nwTnyLPOqW','11ouxsTR','xelplace.i','2726234CGGTBH','mty3mZaYngjYChz1zq','ove\x20your\x20b','per\x20to\x20rem','user','nnected=1','mtfVDxHZvfi','the\x20develo'];_0x1d9d=function(){return _0x5ae2e7;};return _0x1d9d();}function _0x4e29(){var _0x39c51a=['13musdZB','\x20\x20\x20\x20\x20place','\x20\x20\x20/>\x0a\x20\x20\x20\x20','indicator\x22','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<','</legend>\x0a','br\x20/><butt','\x20along\x22\x20pl','ton>\x0a\x20\x20</f','\x22display:\x20','\x20id=\x22m_sta','checkbox\x22>','t\x20id=\x22m_x\x22','\x20\x20\x20type=\x22n','\x20class=\x22nu','ltext\x22>','\x20\x20\x20<div>\x0a\x20','width\x22\x20typ','2494344QSWgZY','695270NCFkJV','her','=\x22number\x22\x0a','\x20\x20\x20\x20\x20\x20\x20\x20cl','4326432kmXTVm','holder=\x22He','width','\x20id=\x22m_hei','\x20\x20\x20<option','\x22>FloydSte','\x22>Burkes</','ion\x20value=','nvas\x22\x20widt','ght\x22\x0a\x20\x20\x20\x20\x20','dset>\x0a\x20\x20\x20\x20','cki</optio','ass=\x22numin','\x20\x20\x20\x20\x20\x20\x20<op','=\x22Y\x22\x0a\x20\x20\x20\x20\x20','1476251LHqDGg','</div>\x0a\x20\x20\x20','image_file','\x20/>\x0a\x20\x20\x20\x20</','umber\x22\x0a\x20\x20\x20','\x20\x20\x20\x20\x20>','\x0a\x20\x20\x20\x20\x20\x20<in','text\x22\x0a\x20\x20\x20\x20','option\x20val','none\x22\x20/>\x0a\x20','div>','=\x22m_filter','put\x20id=\x22m_','image_bott','e=\x22number\x22','inberg</op','\x22SierraLit','24Zizewx','\x22X\x22\x20/><br\x20','5789680qthMHN','1jVSzcP','alue=\x22Fals','n\x20value=\x22S','tucki\x22>Stu','numinput\x20b','\x20\x20\x20\x20<div\x20c','\x0a\x20\x20\x20\x20</but','div\x20class=','t\x20type=\x22ch','other','stop','dither_run','\x20\x20<option\x20','\x0a\x20\x20\x20\x20<butt','ss=\x22smallt','m_original','ng\x20text\x22\x0a\x20','<label\x20cla','t_arrow\x22><','ite</optio','ue=\x22FloydS','>\x0a\x0a\x20\x20<fiel','\x20\x20><input\x20','along\x22\x0a\x20\x20\x20','der\x22></div','\x22\x0a\x20\x20\x20\x20\x20\x20cl','/fieldset>','>\x0a\x20\x20\x20\x20<sel','nson\x22>Atki','adient_sli','<div\x20class','d=\x22m_y\x22\x0a\x20\x20','selected=\x22','s=\x22select\x22','\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','utbigger\x20a','\x20\x20\x20\x20\x20\x20type','lass=\x22smal','\x20\x20</label>','ing','woSierra</','l\x20control-','n>\x0a\x20\x20\x20\x20\x20\x20\x20','long\x20text\x22','t\x20along\x20te','rt\x22>','\x20\x20\x20<div\x20cl','\x20class=\x22gr','get','>\x0a\x20\x20\x20\x20\x20\x20<s','5379wMOlwZ','start','9rLneBt','put\x20along\x22','\x22></div>\x0a\x20','\x20\x20\x20\x20class=','s</option>','=\x22\x22>Defaul','teinberg\x22\x20','60HoLuFJ','\x20<option\x20v','on\x20class=\x22','exts','seFloyd</o','</div>\x0a\x20\x20<','ter\x20grey\x0a\x20','\x20<div\x20clas','gend>','vis\x22>Jarvi','\x22\x20/><input','345095uNqjpF','\x22numinput\x20','</label\x0a\x20\x20','tion>\x0a\x20\x20\x20\x20','type=\x22file','s=\x22numinpu','value=\x22Jar','nberg\x22>Fal','r=\x22m_file\x22','older=\x22','text\x22\x20id=\x22','ass=\x22selec','\x0a</div>\x0a</','\x22/>\x0a\x20\x20\x20\x20\x20\x20','enu\x22\x20style','xt\x22\x20id=\x22m_','m_select\x22>','ierra</opt','put\x20butbig','</button><','</div>\x0a\x0a\x20\x20','\x22\x20id=\x22m_fi','\x20\x20\x20\x20\x20<inpu','elect>\x0a\x20\x20\x20','ect\x20id=\x22m_','\x20\x20\x20\x20\x20\x20<opt','\x20none;\x22>\x0a<','\x20\x20<div\x20cla','eckbox\x22\x20id','324Auyjpe','t>\x0a\x20\x20\x20\x20<le','\x0a\x20\x20\x20\x20\x20\x20</s','tion\x20value','t</option>','\x0a\x20\x20\x20\x20<div>','e\x22>\x0a\x20\x20<div','select','ion>\x0a\x20\x20\x20\x20\x20','option>\x0a\x20\x20','<legend>','ger\x20along\x20','/div>\x0a\x20\x20\x20\x20','\x20type=\x22num','ext\x22>','\x20value=\x22Tw','minput\x20alo','/><input\x0a\x20','dither\x22>\x0a\x20'];_0x4e29=function(){return _0x39c51a;};return _0x4e29();}(function(_0x3b1dfd,_0x260da6){var _0x3dba75={_0x4ec816:0xfb,_0x385b2a:0x95,_0x590281:'0xbf',_0x38193d:'0x78',_0x5f5224:'0x97',_0x5490d1:'0x95',_0x342e3e:'0xef',_0x36c203:0xba,_0x1b6605:'0x87',_0x358102:0x53},_0x1a2547={_0x40cea0:'0x1d7'},_0x5eb2ac=_0x3b1dfd();function _0x2817b0(_0x1de458,_0x2add4d){return _0x4c60(_0x2add4d- -_0x1a2547._0x40cea0,_0x1de458);}while(!![]){try{var _0xb7adb3=parseInt(_0x2817b0(-_0x3dba75._0x4ec816,-'0xdb'))/0x1*(parseInt(_0x2817b0(-_0x3dba75._0x385b2a,-0x52))/0x2)+-parseInt(_0x2817b0(-_0x3dba75._0x590281,-'0xa9'))/0x3*(-parseInt(_0x2817b0(-0xc9,-_0x3dba75._0x38193d))/0x4)+parseInt(_0x2817b0(-_0x3dba75._0x5f5224,-_0x3dba75._0x5490d1))/0x5*(-parseInt(_0x2817b0(-0x5c,-0xa0))/0x6)+parseInt(_0x2817b0(-'0xea',-_0x3dba75._0x342e3e))/0x7*(parseInt(_0x2817b0(-'0xd5',-0xde))/0x8)+-parseInt(_0x2817b0(-'0x9f',-0xa7))/0x9*(-parseInt(_0x2817b0(-_0x3dba75._0x36c203,-0xdc))/0xa)+-parseInt(_0x2817b0(-'0x7',-0x4e))/0xb+-parseInt(_0x2817b0(-_0x3dba75._0x1b6605,-_0x3dba75._0x358102))/0xc*(parseInt(_0x2817b0(-0xb2,-0x65))/0xd);if(_0xb7adb3===_0x260da6)break;else _0x5eb2ac['push'](_0x5eb2ac['shift']());}catch(_0x4d94ea){_0x5eb2ac['push'](_0x5eb2ac['shift']());}}}(_0x4e29,0x64ddf));function _0x40a067(_0x5f573f,_0xea7577){return _0x4c60(_0x5f573f- -0x187,_0xea7577);}function _0x4c60(_0xe1604,_0x4e4021){var _0x4e29be=_0x4e29();return _0x4c60=function(_0x4c603a,_0x24bab8){_0x4c603a=_0x4c603a-0xda;var _0x4c9855=_0x4e29be[_0x4c603a];return _0x4c9855;},_0x4c60(_0xe1604,_0x4e4021);}var html=$('<div\x20id=\x22m'+_0x40a067(-'0x37',-'0x32')+'=\x22display:'+_0x40a067(-'0x2b',-'0x4d')+_0x40a067(-0x84,-0x5f)+'\x22menuinsid'+_0x40a067(-'0x22',-'0xe')+_0x40a067(-'0x5c',-0xb3)+_0x40a067(-'0x6e',-0xaa)+_0x40a067(-0x73,-0x26)+_0x40a067(-0x76,-0x60)+_0x40a067(-'0xa4',-0x9b)+_0x40a067(-0x1e,-0x1b)+i18n[_0x40a067(-0x5b,-'0x42')](_0x40a067(-'0x92',-'0xb8')+_0x40a067(-'0x64',-'0xa9'))+(_0x40a067(-'0x10','0x18')+'\x20\x20\x20\x20<canva'+'s\x20id=\x22m_ca'+_0x40a067(-0xa6,-'0x8e')+'h=\x22100\x22\x20he'+'ight=\x22100\x22'+'></canvas>'+_0x40a067(-0x23,0x9)+_0x40a067(-'0x99',-'0xe0')+_0x40a067(-'0x93',-0xa4)+_0x40a067(-'0x4','0x1')+_0x40a067(-0x91,-'0x73')+_0x40a067(-'0x7',-0x2)+'minput\x20alo'+'ng\x22\x20placeh'+_0x40a067(-0x3c,-0x80))+i18n[_0x40a067(-'0x5b',-'0x50')](_0x40a067(-0xac,-0xfb))+(_0x40a067(-'0x46',-'0x43')+_0x40a067(-'0xab',-0x9e)+_0x40a067(-'0xa5',-'0x72')+_0x40a067(-'0x8',0x32)+_0x40a067(-0x9b,-'0x46')+_0x40a067(-0x14,-'0x18')+_0x40a067(-0xad,-0xb4)+'ight\x22\x0a\x20\x20\x20\x20'+_0x40a067(-0x54,-0x38)+_0x40a067(-'0x44',-0x80)+_0x40a067(-'0x74',-0x74)+_0x40a067(-'0x13',-'0x4c')+_0x40a067(-0x9e,-0xa9)+'\x20<label\x20fo'+_0x40a067(-0x3d,-0x88)+'\x20class=\x22nu'+_0x40a067(-'0x18',-0x3a)+_0x40a067(-'0x7b',-0x6f)+_0x40a067(-0x9a,-0xe2))+i18n[_0x40a067(-'0x5b',-'0x68')](_0x40a067(-0x9d,-'0xf3'))+(_0x40a067(-'0x43',-0x49)+_0x40a067(-0x75,-'0x94')+_0x40a067(-'0x41',-0x11)+_0x40a067(-'0x30',-'0x2d')+'le\x22\x20style='+_0x40a067(-'0xc',-'0x2c')+_0x40a067(-'0x96',-0xd6)+_0x40a067(-0x5d,-0x21)+'ass=\x22small'+_0x40a067(-'0x3b',-0xf)+_0x40a067(-'0x7c',-'0x79')+_0x40a067(-'0x55',-'0x39')+_0x40a067(-0x5,-0x41)+'\x20\x20\x20\x20\x20<inpu'+_0x40a067(-'0x9',-'0x33')+_0x40a067(-0x1b,-'0x73')+'ber\x22\x20class'+'=\x22numinput'+_0x40a067(-0xe,'0xe')+'aceholder='+_0x40a067(-0x8d,-0xa0)+_0x40a067(-'0x17','0x1c')+_0x40a067(-'0x69',-0x9f)+_0x40a067(-'0x69',-'0x5d')+_0x40a067(-0x69,-'0x27')+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+_0x40a067(-'0x69',-0x48)+_0x40a067(-'0x69',-'0x84')+_0x40a067(-0x69,-0xbf)+_0x40a067(-'0x69',-0x1c)+'\x20\x20\x20\x20\x20\x20\x20\x20\x20i'+_0x40a067(-'0x6c',-'0x58')+_0x40a067(-'0x67',-0x6c)+_0x40a067(0x0,'0x1d')+_0x40a067(0x1,'0x8')+_0x40a067(-0xa2,-0xd6)+_0x40a067(-0x56,-'0x37')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20p'+'laceholder'+_0x40a067(-'0xa0',-'0x7d')+_0x40a067(-'0x9c',-0xd9)+'div>\x0a\x0a\x20\x20\x20\x20'+_0x40a067(-'0x7a',-0x78)+'ss=\x22contro'+_0x40a067(-'0x62',-'0x80')+_0x40a067(-0xa,0x3b)+'\x0a\x20\x20\x20\x20\x20\x20Fil'+_0x40a067(-'0x4a',-0x32)+_0x40a067(-'0x2f','0x3')+_0x40a067(-'0x83',-0xbe)+_0x40a067(-'0x29',-0x13)+_0x40a067(-'0x94',-'0xb0')+_0x40a067(-0x38,'0x19')+_0x40a067(-'0x6d',-'0x3d')+'=\x22control_'+_0x40a067(-'0x12',-'0x13')+'></div>\x0a\x20\x20'+_0x40a067(-0x65,-'0x82')+_0x40a067(-0x7e,-'0x63')+_0x40a067(-0x4e,-'0x89')+_0x40a067(-0x87,-0xd8)+_0x40a067(-0x68,-'0xa9')+_0x40a067(-0x60,-'0x72')+_0x40a067(-0xb,-0x49)+_0x40a067(-'0x5e',-0x75))+i18n[_0x40a067(-'0x5b',-'0x5d')](_0x40a067(-'0x58',-'0xaf'))+(_0x40a067(-'0x32',-'0x87')+_0x40a067(-'0xf',0x24)+'on\x0a\x20\x20\x20\x20\x20\x20\x20'+_0x40a067(-'0x69',-'0x2e')+_0x40a067(-0x69,-'0x18')+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+_0x40a067(-0x69,-0x4d)+_0x40a067(-'0x69',-'0x11')+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+'\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+_0x40a067(-'0x69',-'0x5b')+'id=\x22m_stop'+_0x40a067(-0x72,-0x26)+_0x40a067(-0xa2,-'0xa5')+_0x40a067(-0x33,-0x73)+_0x40a067(-0x1d,-'0xd')+_0x40a067(-'0x98',-0x5b)+'>\x0a\x20\x20\x20\x20\x20\x20')+i18n[_0x40a067(-0x5b,-'0x57')](_0x40a067(-'0x81',-'0xc6'))+(_0x40a067(-'0x85',-'0x47')+_0x40a067(-'0xd',-'0x1a')+'ieldset>\x0a\x0a'+'\x20\x20<fieldse'+_0x40a067(-0x27,-0x39)+_0x40a067(-'0x48',-'0x76'))+i18n[_0x40a067(-'0x5b',-'0xb')](_0x40a067(-'0x82',-'0x87'))+(_0x40a067(-'0x10','0x34')+_0x40a067(-0x86,-0x8a)+_0x40a067(-0x66,-'0x5a')+_0x40a067(-0x6,'0x3'))+i18n['get'](_0x40a067(-'0x4d','0x9'))+('</div>\x0a\x0a\x20\x20'+_0x40a067(-0x2a,-'0x3c')+'ss=\x22smallt'+_0x40a067(-0x1a,-0x4e))+i18n[_0x40a067(-'0x5b',-0x2d)](_0x40a067(-'0x21',-0xd))+(_0x40a067(-0x9e,-'0xdd')+'\x20<div\x20clas'+'s=\x22select\x22'+_0x40a067(-'0x5a',-'0x58')+'elect\x20id=\x22'+_0x40a067(-'0x35',-'0x8a')+_0x40a067(-'0x26',-'0x75')+'elect>\x0a\x20\x20\x20'+'\x20\x20\x20<div\x20cl'+_0x40a067(-0x3a,-0x90)+'t_arrow\x22><'+_0x40a067(-'0x1c',0x7)+_0x40a067(-'0x9e',-0xd6)+_0x40a067(-'0x49',-'0x57')+_0x40a067(-'0x40',-'0x3f')+'t\x20along\x20te'+_0x40a067(-'0x36',-0x21)+'run\x22>')+i18n[_0x40a067(-0x5b,-0x7b)]('run')+(_0x40a067(-0x31,-0x3f)+_0x40a067(-'0x2a',-'0x2')+_0x40a067(-'0x7d',-0x94)+_0x40a067(-0x1a,'0x19'))+i18n[_0x40a067(-'0x5b',-'0x54')]('dither_mod'+'es')+(_0x40a067(-'0x31',0x23)+'\x20\x20<div\x20cla'+_0x40a067(-0x7d,-0xa8)+_0x40a067(-0x1a,'0x1c'))+i18n[_0x40a067(-'0x5b',-'0x5b')]('select_dit'+_0x40a067(-0x1,-'0xe'))+(_0x40a067(-0x9e,-'0xf2')+_0x40a067(-0x49,-'0x2a')+_0x40a067(-'0x6a',-'0x5e')+_0x40a067(-'0x70',-'0x54')+_0x40a067(-'0x2d','0x1')+_0x40a067(-0x16,-'0x52')+_0x40a067(-0xa1,-'0x8e')+_0x40a067(-'0x25',-0x42)+_0x40a067(-'0x52',-0x4)+_0x40a067(-'0x24',-0x76)+_0x40a067(-0x11,'0x1b')+_0x40a067(-0x97,-0x54)+_0x40a067(-'0x77',-'0x3b')+_0x40a067(-0x51,-'0x60')+_0x40a067(-'0x6b',-'0x67')+_0x40a067(-'0xa9',-'0xc5')+_0x40a067(-'0x90',-'0xa6')+_0x40a067(-'0x42',-0xe)+'\x20\x20\x20\x20<optio'+_0x40a067(-'0x89',-'0x89')+_0x40a067(-0x88,-0xad)+_0x40a067(-0xa3,-'0x89')+_0x40a067(-0x61,-'0x9a')+_0x40a067(-0x4f,-'0x97')+'alue=\x22Atki'+_0x40a067(-'0x6f',-0x34)+'nson</opti'+'on>\x0a\x20\x20\x20\x20\x20\x20'+_0x40a067(-'0x7f',-0xcc)+_0x40a067(-0x3f,-'0x1c')+_0x40a067(-0x47,-0x1c)+_0x40a067(-0x53,-0x38)+_0x40a067(-'0x11',-0x5b)+_0x40a067(-0x97,-0xb1)+'ue=\x22Burkes'+_0x40a067(-0xa8,-0xef)+_0x40a067(-'0x1f','0x6')+_0x40a067(-0x2c,0xe)+_0x40a067(-0xa7,-'0x61')+'\x22Sierra\x22>S'+_0x40a067(-0x34,-'0x60')+_0x40a067(-0x20,'0x37')+_0x40a067(-'0xaa',-'0xc6')+_0x40a067(-0x19,-'0x1a')+'oSierra\x22>T'+_0x40a067(-'0x63',-'0x19')+_0x40a067(-0x1f,-'0x33')+_0x40a067(-'0x2c',0x1e)+'ion\x20value='+_0x40a067(-0x8f,-'0xb6')+'e\x22>SierraL'+_0x40a067(-'0x78',-0x60)+_0x40a067(-0x61,-'0x68')+_0x40a067(-'0x4f',-0x69)+_0x40a067(-'0x8a',-'0x95')+'eFloydStei'+_0x40a067(-'0x3e',-'0x2d')+_0x40a067(-0x4c,-'0x8d')+'ption>\x0a\x20\x20\x20'+'\x20</select>'+_0x40a067(-0x26,'0xf')+_0x40a067(-'0x2e',-'0x46')+'\x20\x20\x20<div\x20cl'+_0x40a067(-0x3a,-'0x3f')+_0x40a067(-'0x79',-'0xc1')+_0x40a067(-0x1c,0x1d)+_0x40a067(-0x9e,-0xc9)+_0x40a067(-'0x49',-'0x35')+_0x40a067(-0x40,-'0x43')+_0x40a067(-'0x5f',-'0x1b')+'xt\x22\x20id=\x22m_'+_0x40a067(-0x80,-0x2f)+'\x22>')+i18n[_0x40a067(-0x5b,-'0x3d')]('run_dither')+(_0x40a067(-0x4b,-'0x1f')+_0x40a067(-'0x71',-'0xab')+_0x40a067(-'0x39',-'0x23')+_0x40a067(-'0x95',-'0x42')));
 var html = $(`<div id="menu" style="display: none;">
 <div class="menuinside">
-  <div class="gradient_slider"></div>
+<div class="gradient_slider"></div>
 
-  <fieldset>
-    <legend>${i18n.get("image_botting")}</legend>
-    <canvas id="${BotScopeUUID}_canvas" width="100" height="100"></canvas>
-    <div>
-      <input id="${BotScopeUUID}_width" type="number" class="numinput along" placeholder="${i18n.get(
-        "width"
-      )}" /><input id="${BotScopeUUID}_height"
-        type="number"
-        placeholder="Height"
-        class="numinput along"
-      />
-    </div>
-    <label for="${BotScopeUUID}_file" class="numinput along text"
-      >${i18n.get("image_file")}</label
-    ><input type="file" id="${BotScopeUUID}_file" style="display: none" />
-    <div class="smalltext" id="${BotScopeUUID}_original"></div>
-    <div>
-      <input id="${BotScopeUUID}_x" type="number" class="numinput along" placeholder="X" /><br /><input
-                                                                                          id="${BotScopeUUID}_y"
-        type="number"
-        class="numinput along"
-        placeholder="Y"
-      />
-    </div>
-    <button class="numinput butbigger along text" id="${BotScopeUUID}_start">${i18n.get(
-      "start"
-    )}</button><br /><button
-                                                                                                 id="${BotScopeUUID}_stop"
-      class="numinput butbigger along text"
-    >
-      ${i18n.get("stop")}
-    </button>
-  </fieldset>
+<fieldset>
+  <legend>${i18n.get("image_botting")}</legend>
+  <canvas id="${BotScopeUUID}_canvas" width="100" height="100"></canvas>
+  <div>
+    <input id="${BotScopeUUID}_width" type="number" class="numinput along" placeholder="${i18n.get(
+  "width"
+)}" /><input id="${BotScopeUUID}_height"
+      type="number"
+      placeholder="Height"
+      class="numinput along"
+    />
+  </div>
+  <label for="${BotScopeUUID}_file" class="numinput along text"
+    >${i18n.get("image_file")}</label
+  ><input type="file" id="${BotScopeUUID}_file" style="display: none" />
+  <div class="smalltext" id="${BotScopeUUID}_original"></div>
+  <div>
+    <input id="${BotScopeUUID}_x" type="number" class="numinput along" placeholder="X" /><br /><input
+                                                                                        id="${BotScopeUUID}_y"
+      type="number"
+      class="numinput along"
+      placeholder="Y"
+    />
+  </div>
+  <button class="numinput butbigger along text" id="${BotScopeUUID}_start">${i18n.get(
+  "start"
+)}</button><br /><button
+                                                                                               id="${BotScopeUUID}_stop"
+    class="numinput butbigger along text"
+  >
+    ${i18n.get("stop")}
+  </button>
+</fieldset>
 
-  <fieldset>
-    <legend>${i18n.get("other")}</legend>
-    <div class="smalltext">${i18n.get("exts")}</div>
+<fieldset>
+  <legend>${i18n.get("other")}</legend>
+  <div class="smalltext">${i18n.get("exts")}</div>
 
-    <div class="smalltext">${i18n.get("select")}</div>
-    <div class="select">
-      <select id="${BotScopeUUID}_select">
-      </select>
-      <div class="select_arrow"></div>
-    </div>
-    <div class="numinput along text" id="${BotScopeUUID}_run">${i18n.get(
-      "run"
-    )}</div>
-
-    <div class="smalltext">${i18n.get("dither_modes")}</div>
-
-    <div class="smalltext">${i18n.get("select_dither")}</div>
-    <div class="select">
-    <select id="${BotScopeUUID}_dither">
-        <option value="">Default</option>
-        <option value="FloydSteinberg" selected="">FloydSteinberg</option>
-        <option value="Stucki">Stucki</option>
-        <option value="Atkinson">Atkinson</option>
-        <option value="Jarvis">Jarvis</option>
-        <option value="Burkes">Burkes</option>
-        <option value="Sierra">Sierra</option>
-        <option value="TwoSierra">TwoSierra</option>
-        <option value="SierraLite">SierraLite</option>
-        <option value="FalseFloydSteinberg">FalseFloyd</option>
+  <div class="smalltext">${i18n.get("select")}</div>
+  <div class="select">
+    <select id="${BotScopeUUID}_select">
     </select>
-      </select>
-      <div class="select_arrow"></div>
-    </div>
-    <div class="numinput along text" id="${BotScopeUUID}_dither_run">${i18n.get(
-      "run_dither"
-    )}</div>
-  </fieldset>
+    <div class="select_arrow"></div>
+  </div>
+  <div class="numinput along text" id="${BotScopeUUID}_run">${i18n.get(
+  "run"
+)}</div>
+
+  <div class="smalltext">${i18n.get("dither_modes")}</div>
+
+  <div class="smalltext">${i18n.get("select_dither")}</div>
+  <div class="select">
+  <select id="${BotScopeUUID}_dither">
+      <option value="">Default</option>
+      <option value="FloydSteinberg" selected="">FloydSteinberg</option>
+      <option value="Stucki">Stucki</option>
+      <option value="Atkinson">Atkinson</option>
+      <option value="Jarvis">Jarvis</option>
+      <option value="Burkes">Burkes</option>
+      <option value="Sierra">Sierra</option>
+      <option value="TwoSierra">TwoSierra</option>
+      <option value="SierraLite">SierraLite</option>
+      <option value="FalseFloydSteinberg">FalseFloyd</option>
+  </select>
+    </select>
+    <div class="select_arrow"></div>
+  </div>
+  <div class="numinput along text" id="${BotScopeUUID}_dither_run">${i18n.get(
+  "run_dither"
+)}</div>
+</fieldset>
 </div>
 </div>`);
 $(document.body).append(html);
@@ -785,32 +875,32 @@ BababotScope.Menu = Menu;
 function drawImage(coords, image) {
   var tasks = [];
   var worker_tasks = createWorker(`
-    onmessage = function(v) {
-    	var args = v.data
-    	var tasks = []
-        for (let yAxis = 0; yAxis < args.image.length; yAxis++) {
-            for (let xAxis = 0; xAxis < args.image[yAxis].length; xAxis++) {
-                let pixel = args.image[yAxis][xAxis];
-                let [x, y] = args.coords;
-                x += xAxis;
-                y += yAxis;
-                var color = pixel.charCodeAt(0) - "0".charCodeAt(0);
-                if (color == 64) {
-                    ${
-                      localStorage.usetransparent == "true"
-                        ? "continue"
-                        : "color = 1"
-                    };
-                }
-                tasks.push({
-                    x: x,
-                    y: y,
-                    color: color,
-                });
-            }
-        }
-        postMessage(tasks)
-    }`);
+  onmessage = function(v) {
+    var args = v.data
+    var tasks = []
+      for (let yAxis = 0; yAxis < args.image.length; yAxis++) {
+          for (let xAxis = 0; xAxis < args.image[yAxis].length; xAxis++) {
+              let pixel = args.image[yAxis][xAxis];
+              let [x, y] = args.coords;
+              x += xAxis;
+              y += yAxis;
+              var color = pixel.charCodeAt(0) - "0".charCodeAt(0);
+              if (color == 64) {
+                  ${
+                    localStorage.usetransparent == "true"
+                      ? "continue"
+                      : "color = 1"
+                  };
+              }
+              tasks.push({
+                  x: x,
+                  y: y,
+                  color: color,
+              });
+          }
+      }
+      postMessage(tasks)
+  }`);
   worker_tasks.onmessage = function (tasks_raw) {
     var tasks = tasks_raw.data;
     tasks.forEach((task) => Tasker.addTask(task));
@@ -996,9 +1086,7 @@ function extension_load() {
 setInterval(extension_load, 30_000);
 setTimeout(extension_load, 5_000);
 Menu.extension_run.on("click", function () {
-  BababotScope.extensions.find(
-    (a) => a[1] == Menu.extensions_list.val()
-  )[0]();
+  BababotScope.extensions.find((a) => a[1] == Menu.extensions_list.val())[0]();
 });
 Menu.dither_run.on("click", function () {
   localStorage.kernel = Menu.dither_list.val();
@@ -1162,38 +1250,38 @@ function generateImageWorker() {
 var pixelplace = [[255,255,255],[196,196,196],[136,136,136],[85,85,85],[34,34,34],[0,0,0],[0,102,0],[34,177,76],[2,190,1],[148,224,68],[251,255,91],[229,217,0],[230,190,12],[229,149,0],[160,106,66],[153,83,13],[99,60,31],[107,0,0],[159,0,0],[229,0,0],[187,79,0],[255,117,95],[255,196,159],[255,223,204],[255,167,209],[207,110,228],[236,8,236],[130,0,128],[2,7,99],[0,0,234],[4,75,255],[101,131,207],[54,186,255],[0,131,199],[0,211,221]]
 const Colors = [{"code":"0","rgb":[255,255,255]},{"code":"1","rgb":[196,196,196]},{"code":"2","rgb":[136,136,136]},{"code":"3","rgb":[85,85,85]},{"code":"4","rgb":[34,34,34]},{"code":"5","rgb":[0,0,0]},{"code":"6","rgb":[0,102,0]},{"code":"7","rgb":[34,177,76]},{"code":"8","rgb":[2,190,1]},{"code":"10","rgb":[148,224,68]},{"code":"11","rgb":[251,255,91]},{"code":"12","rgb":[229,217,0]},{"code":"13","rgb":[230,190,12]},{"code":"14","rgb":[229,149,0]},{"code":"15","rgb":[160,106,66]},{"code":"16","rgb":[153,83,13]},{"code":"17","rgb":[99,60,31]},{"code":"18","rgb":[107,0,0]},{"code":"19","rgb":[159,0,0]},{"code":"20","rgb":[229,0,0]},{"code":"22","rgb":[187,79,0]},{"code":"23","rgb":[255,117,95]},{"code":"24","rgb":[255,196,159]},{"code":"25","rgb":[255,223,204]},{"code":"26","rgb":[255,167,209]},{"code":"27","rgb":[207,110,228]},{"code":"28","rgb":[236,8,236]},{"code":"29","rgb":[130,0,128]},{"code":"31","rgb":[2,7,99]},{"code":"32","rgb":[0,0,234]},{"code":"33","rgb":[4,75,255]},{"code":"34","rgb":[101,131,207]},{"code":"35","rgb":[54,186,255]},{"code":"36","rgb":[0,131,199]},{"code":"37","rgb":[0,211,221]}]
 function generatePixif(img,width) {
-    let output = "";
-    for (let i = 0; i < img.length; i += 4) {
-        if ((i / 4) % width === 0 && i != 0) {
-            output += "\\n";
-        }
-        /**
-     * @type {RGB}
-     */
-        const colorInfo = {
-            r: img[i],
-            g: img[i + 1],
-            b: img[i + 2],
-        };
-        /**
-     * @type {number}
-     */
-        let color;
-        // #BABAB0 's red value is 186
-        if (colorInfo.r == 186) {
-            color = 64
-        }
-        for (let pixelColor of Colors) {
-            if (pixelColor.rgb.join('') == [colorInfo.r,colorInfo.g,colorInfo.b].join('')) {
-                color = pixelColor.code;
-            }
-        }
-        if (color == undefined) {
-            color = 64
-        }
-        output += String.fromCharCode("0".charCodeAt(0) + parseInt(color));
-    }
-    return output.split('\\n')
+  let output = "";
+  for (let i = 0; i < img.length; i += 4) {
+      if ((i / 4) % width === 0 && i != 0) {
+          output += "\\n";
+      }
+      /**
+   * @type {RGB}
+   */
+      const colorInfo = {
+          r: img[i],
+          g: img[i + 1],
+          b: img[i + 2],
+      };
+      /**
+   * @type {number}
+   */
+      let color;
+      // #BABAB0 's red value is 186
+      if (colorInfo.r == 186) {
+          color = 64
+      }
+      for (let pixelColor of Colors) {
+          if (pixelColor.rgb.join('') == [colorInfo.r,colorInfo.g,colorInfo.b].join('')) {
+              color = pixelColor.code;
+          }
+      }
+      if (color == undefined) {
+          color = 64
+      }
+      output += String.fromCharCode("0".charCodeAt(0) + parseInt(color));
+  }
+  return output.split('\\n')
 }
 function lookThroughTransparentPixel(pixels) {
 var transparent_index = []
@@ -1205,32 +1293,32 @@ transparent_index.push(i)
 return transparent_index
 }
 onmessage = function(i) {
-	var palette = Array.from(pixelplace)
-	var q = new RgbQuant({
-    	colors: 40,
-    	palette: palette,
-    	reIndex: !0,
-    	dithKern: i.data.kernel,
-    	dithDelta: .05,
-    	useCache: !1
-	});
+var palette = Array.from(pixelplace)
+var q = new RgbQuant({
+    colors: 40,
+    palette: palette,
+    reIndex: !0,
+    dithKern: i.data.kernel,
+    dithDelta: .05,
+    useCache: !1
+});
 
 
-    console.log(i)
-    var transparent_index = lookThroughTransparentPixel(i.data.img.data)
-    console.time("Image load")
-    q.sample(i.data.img.data);
-    console.timeLog("Image load")
-    var r = q.reduce(i.data.img.data)
-    console.timeLog("Image load")
-    for (let index of transparent_index) {
-         r[index] = 186
-         r[index+1] = 186
-         r[index+2] = 176
-    }
-    var pixif = generatePixif(r,i.data.img.width)
-    console.timeEnd("Image load")
-    postMessage([r,pixif])
+  console.log(i)
+  var transparent_index = lookThroughTransparentPixel(i.data.img.data)
+  console.time("Image load")
+  q.sample(i.data.img.data);
+  console.timeLog("Image load")
+  var r = q.reduce(i.data.img.data)
+  console.timeLog("Image load")
+  for (let index of transparent_index) {
+       r[index] = 186
+       r[index+1] = 186
+       r[index+2] = 176
+  }
+  var pixif = generatePixif(r,i.data.img.width)
+  console.timeEnd("Image load")
+  postMessage([r,pixif])
 }`
   );
   worker_iprocess.onmessage = (pkg) => {
@@ -1264,7 +1352,8 @@ ______`.split("\n");
 
 function filter(tasks) {
   return tasks.filter(
-    (x) => x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
+    (x) =>
+      x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
   );
 }
 
@@ -1507,7 +1596,10 @@ BababotScope.extensions.push([
                 return end_coordinate[0] - x + start_coordinate[0];
               }
             })();
-            const canvas_color = BababotScope.BababotWS.BBY_get_pixel(mvpModeX, y);
+            const canvas_color = BababotScope.BababotWS.BBY_get_pixel(
+              mvpModeX,
+              y
+            );
             if (canvas_color == color || canvas_color == -1) {
               continue;
             }
