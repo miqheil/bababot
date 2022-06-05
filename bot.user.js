@@ -26,7 +26,17 @@
 // If you spot any bugs, please let me know!
 // You can open an issue from Issues tab.
 // Glad to know ur a fan of my bot! xo bababoy
-
+var BotScopeUUID = crypto.randomUUID();
+console.log("Bababot uuid:", BotScopeUUID);
+function addCss(cssCode) {
+  var styleElement = document.createElement("style");
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = cssCode;
+  } else {
+    styleElement.appendChild(document.createTextNode(cssCode));
+  }
+  document.getElementsByTagName("head")[0].appendChild(styleElement);
+}
 /**
  * @param {string} url
  */
