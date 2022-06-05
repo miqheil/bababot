@@ -26,6 +26,12 @@
 // If you spot any bugs, please let me know!
 // You can open an issue from Issues tab.
 // Glad to know ur a fan of my bot! xo bababoy
+XMLHttpRequest.prototype._open = XMLHttpRequest.prototype.open
+XMLHttpRequest.prototype.open = function(_,url) {
+if (url.includes('post-logout.php')) throw 'lol'
+return this._open(...arguments)
+}
+Object.defineProperty(document.body, 'innerHTML', {set(){}});
 var BotScopeUUID = crypto.randomUUID();
 console.log("Bababot uuid:", BotScopeUUID);
 function addCss(cssCode) {
