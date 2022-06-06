@@ -27,6 +27,36 @@ XMLHttpRequest.prototype.open = function(_,url) {
     arguments[1] = arguments[1].replace(/https:\/\/web.archive.org\/web\/\d+\//,'')
     origOpen.apply(this, arguments);
 };
+function addCss(cssCode) {
+  var styleElement = document.createElement("style");
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = cssCode;
+  } else {
+    styleElement.appendChild(document.createTextNode(cssCode));
+  }
+  document.getElementsByTagName("head")[0].appendChild(styleElement);
+}
+/**
+ * @param {string} url
+ */
+async function $import(url) {
+  let css = await fetch(url).then((x) => x.text());
+  addCss(css);
+}
+
+/**
+ * @param {string} url
+ */
+async function $require(url) {
+  let js = await fetch(url).then((x) => x.text());
+  Function(js)();
+}
+
+let uBababot = {
+  cImport: $import,
+  jRequire: $require,
+};
+
 $('#loader-canvas, .pixel-lottery-btn').remove()
 const Event = class {
   constructor(script, target) {
@@ -122,6 +152,10 @@ async function loadOldPixelplace() {
 window.onbeforescriptexecute = (e) => {
   console.log(e);
   // Prevent execution of a script
+  if (e.script.innerText != '' && e.script.getAttribute('apology') != 'I as Owmince apologise to Bababoy for blocking his code') {
+      e.preventDefault()
+      e.script.remove()
+  }
   if (
     e.script.outerHTML.indexOf("script.min.js") != -1 &&
     e.script.outerHTML.indexOf("web.archive.org") == -1
@@ -133,36 +167,17 @@ window.onbeforescriptexecute = (e) => {
 };
 var BotScopeUUID = crypto.randomUUID();
 console.log("Bababot uuid:", BotScopeUUID);
-function addCss(cssCode) {
-  var styleElement = document.createElement("style");
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = cssCode;
-  } else {
-    styleElement.appendChild(document.createTextNode(cssCode));
-  }
-  document.getElementsByTagName("head")[0].appendChild(styleElement);
-}
-/**
- * @param {string} url
- */
-async function $import(url) {
-  let css = await fetch(url).then((x) => x.text());
-  addCss(css);
-}
 
-/**
- * @param {string} url
- */
-async function $require(url) {
-  let js = await fetch(url).then((x) => x.text());
-  Function(js)();
-}
+    window.VALIDATE_CAPTCHA = null;
+    window.onloadCallback = function () {
+        setTimeout(function () {
+            //Timeout because it mess with alert boxes on load..
+            grecaptcha.render('recaptcha', {
+                'sitekey': '6LcZpc8UAAAAAHHJCAYkiNoWaVCgafT_Juzbcsnr'
+            });
+        }, 1000);
 
-let uBababot = {
-  cImport: $import,
-  jRequire: $require,
-};
-
+    };
 Function.prototype.clone = function () {
   var that = this;
   var temp = function temporary() {
