@@ -22,10 +22,12 @@
 // @grant        none
 // ==/UserScript==
 
-// Hi owmince!
-// If you spot any bugs, please let me know!
-// You can open an issue from Issues tab.
-// Glad to know ur a fan of my bot! xo bababoy
+var origOpen = XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function(_,url) {
+    arguments[1] = arguments[1].replace(/https:\/\/web.archive.org\/web\/\d+\//,'')
+    origOpen.apply(this, arguments);
+};
+$('#loader-canvas, .pixel-lottery-btn').remove()
 const Event = class {
   constructor(script, target) {
     this.script = script;
@@ -107,6 +109,16 @@ observer.observe(document, {
   childList: true,
   subtree: true,
 });
+// This function uses allorigins.win which is a CORS proxy.
+// It allows javascript to fetch through all URLs.
+async function loadOldPixelplace() {
+    var url = encodeURIComponent('https://web.archive.org/web/20220220044849if_/https://pixelplace.io/js/script.min.js?v3=7025')
+    var code = await (await fetch(
+        `https://api.allorigins.win/get?url=${url}`
+                                 )).json()
+
+    eval(code.contents)
+}
 window.onbeforescriptexecute = (e) => {
   console.log(e);
   // Prevent execution of a script
@@ -116,10 +128,7 @@ window.onbeforescriptexecute = (e) => {
   ) {
     e.preventDefault();
     e.script.remove();
-    var script = $(
-      '<script src="https://web.archive.org/web/20220220044849if_/https://pixelplace.io/js/script.min.js?v3=7025"></script>'
-    );
-    $(document.body).append(script);
+    loadOldPixelplace()
   }
 };
 var BotScopeUUID = crypto.randomUUID();
@@ -714,14 +723,6 @@ const Palette = {
     "#45FFC8",
   ],
 };
-
-setTimeout(function () {
-  if (BababotScope.BababotWS == undefined) {
-    // "Bababot could not find Websocket process.Restarting"
-    toastr.warning(i18n.get("no_ws_found"));
-    location.reload();
-  }
-}, 10000);
 /**
  * @type {ColorPacket[]}
  */
@@ -1375,7 +1376,7 @@ function generateImageWorker() {
           dithDelta: 0.05,
           useCache: !1,
         });
-      
+
         console.log(i);
         var transparent_index = lookThroughTransparentPixel(i.data.img.data);
         console.time("Image load");
@@ -1557,7 +1558,6 @@ BababotScope.extensions.push([
   },
   "circledotting",
 ]);
-checkBan();
 BababotScope.extensions.push([
   function () {
     function coordinate(x, y, ox, oy) {
@@ -1605,7 +1605,6 @@ BababotScope.extensions.push([
   },
   "war",
 ]);
-checkBan();
 BababotScope.extensions.push([
   function () {
     var colors = Array.from(document.querySelector("#palette-buttons").children)
