@@ -8,7 +8,7 @@ fetch('https://pixelplace.io/api/get-painting.php?id=7&connected=1').then(functi
         console.warning('Contact Bababoy#2013')
         close()
     }
-})
+});
 /*
 * Copyright (c) 2015, Leon Sorokin
 * All rights reserved. (MIT Licensed)
