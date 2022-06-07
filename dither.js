@@ -1,14 +1,3 @@
-var userlist = ['Bababoy','Bang','Owmince','CeoOfJS']
-// fetch get-user.php from pixelplace.io
-fetch('https://pixelplace.io/api/get-painting.php?id=7&connected=1').then(function(response) {
-    return response.json();
-}).then(function(data) {
-    // if user is in the list
-    if (!userlist.includes(data.user.name)) {
-        console.warning('Contact Bababoy#2013')
-        close()
-    }
-});
 /*
 * Copyright (c) 2015, Leon Sorokin
 * All rights reserved. (MIT Licensed)

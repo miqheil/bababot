@@ -1274,13 +1274,6 @@ function process() {
   });
 }
 BababotScope.extensions = BababotScope.extensions || [];
-var amogus = `______
-__..._
-_..**_
-_...._
-__..._
-__._._
-______`.split("\n");
 
 function filter(tasks) {
   return tasks.filter(
@@ -1289,59 +1282,61 @@ function filter(tasks) {
   );
 }
 
-BababotScope.extensions.push([
-  () =>
-    (Tasker.onTaskAction = function (task) {
+function PatternExtensionGenerate(pattern) {
+  return function() {
+    Tasker.onTaskAction = function (task) {
       if (task == undefined) return;
       let chunkCoord = [
-        Math.floor(task.x / amogus[0].length) * amogus[0].length,
-        Math.floor(task.y / amogus.length) * amogus.length,
+        Math.floor(task.x / pattern[0].length) * pattern[0].length,
+        Math.floor(task.y / pattern.length) * pattern.length,
       ];
-      let amogusCoord = [task.x - chunkCoord[0], task.y - chunkCoord[1]];
-      let ascii = amogus[amogusCoord[1]][amogusCoord[0]];
-      if (ascii == "_") {
+      let patternCoord = [task.x - chunkCoord[0], task.y - chunkCoord[1]];
+      let ascii = pattern[patternCoord[1]][patternCoord[0]];
+      if (ascii == "p") {
         return false;
-      } else if (ascii == ".") {
+      } else if (ascii == "X") {
         task.color = getSelectedColor();
-      } else if (ascii == "*") {
-        task.color = 0;
       } else {
-        toastr.error("unexpected pixel");
+        task.color = ascii.charCodeAt(0) - "0".charCodeAt(0)
       }
       return true;
-    }),
-  "amogus",
+    }
+  }
+}
+var amogus = [
+  "p555",
+  "5500",
+  "5555",
+  "p555",
+  "p5p5"
+]
+BababotScope.extensions.push([
+  PatternExtensionGenerate(amogus),
+  "amogus"
+])
+BababotScope.extensions.push([
+  PatternExtensionGenerate(["L5","5L"]), 
+  "gmod missing texture"
 ]);
 
 BababotScope.extensions.push([
-  () =>
-    (Tasker.onTaskAction = function (task) {
-      if (task == undefined) return;
-      task.color = parseInt(["35", "26", "0", "26", "35"][task.y % 5]);
-      return true;
-    }),
+  PatternExtensionGenerate(["S","J","0","J","S"]),
   "trans",
 ]);
-
 BababotScope.extensions.push([
-  () =>
-    (Tasker.onTaskAction = function (task) {
-      if (task == undefined) return;
-      task.color = parseInt(["20", "14", "12", "8", "33", "29"][task.y % 6]);
-      return true;
-    }),
-  "lgbt",
+  PatternExtensionGenerate(['D', '>', '<', '8', 'Q', 'M']),
+  "lgbt"
+]);
+BababotScope.extensions.push([
+  PatternExtensionGenerate(['K', 'J', '0', 'U', '0', 'J']),
+  "femboy"
 ]);
 
 BababotScope.extensions.push([
-  () =>
-    (Tasker.onTaskAction = function (task) {
-      if (task == undefined) return;
-      task.color = parseInt(["27", "26", "0", "37", "0", "26"][task.y % 6]);
-      return true;
-    }),
-  "femboy",
-]);
+  function() {
+    PatternExtensionGenerate(BababotScope.Menu.pixif)()
+  },"Generate pattern by image"
+])
 
 BababotScope.extensions.push([
   function () {
