@@ -1,5 +1,3 @@
-console.error('Contact Bababoy#2013.')
-close()
 /*
 * Copyright (c) 2015, Leon Sorokin
 * All rights reserved. (MIT Licensed)

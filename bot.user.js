@@ -1094,54 +1094,10 @@ function putPixels(subpxArr) {
       Menu.canvas_display.height
     );
 }
-var code = await (
-  await fetch(
-    "https://raw.githubusercontent.com/bababoyy/bababot/main/dither.js"
-  )
-).text();
-
 var worker_iprocess;
 function generateImageWorker() {
   worker_iprocess = createWorker(
-    code +
-      `
-      var pixelplace = [
-        [255, 255, 255],
-        [196, 196, 196],
-        [136, 136, 136],
-        [85, 85, 85],
-        [34, 34, 34],
-        [0, 0, 0],
-        [0, 102, 0],
-        [34, 177, 76],
-        [2, 190, 1],
-        [148, 224, 68],
-        [251, 255, 91],
-        [229, 217, 0],
-        [230, 190, 12],
-        [229, 149, 0],
-        [160, 106, 66],
-        [153, 83, 13],
-        [99, 60, 31],
-        [107, 0, 0],
-        [159, 0, 0],
-        [229, 0, 0],
-        [187, 79, 0],
-        [255, 117, 95],
-        [255, 196, 159],
-        [255, 223, 204],
-        [255, 167, 209],
-        [207, 110, 228],
-        [236, 8, 236],
-        [130, 0, 128],
-        [2, 7, 99],
-        [0, 0, 234],
-        [4, 75, 255],
-        [101, 131, 207],
-        [54, 186, 255],
-        [0, 131, 199],
-        [0, 211, 221],
-      ];
+      `importScripts("https://cdn.jsdelivr.net/gh/bababoyy@ff982be/bababot/dither.js")
       const Colors = [
         { code: "0", rgb: [255, 255, 255] },
         { code: "1", rgb: [196, 196, 196] },
@@ -1226,10 +1182,9 @@ function generateImageWorker() {
         return transparent_index;
       }
       onmessage = function (i) {
-        var palette = Array.from(pixelplace);
         var q = new RgbQuant({
           colors: 40,
-          palette: palette,
+          palette: Colors.map(x => x.rgb),
           reIndex: !0,
           dithKern: i.data.kernel,
           dithDelta: 0.05,
@@ -1304,11 +1259,13 @@ function PatternExtensionGenerate(pattern) {
   }
 }
 var amogus = [
-  "p555",
-  "5500",
-  "5555",
-  "p555",
-  "p5p5"
+  "ppppp",
+  "p555p",
+  "5500p",
+  "5555p",
+  "p555p",
+  "p5p5p",
+  "ppppp"
 ]
 BababotScope.extensions.push([
   PatternExtensionGenerate(amogus),
