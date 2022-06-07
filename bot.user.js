@@ -27,170 +27,14 @@ XMLHttpRequest.prototype.open = function(_,url) {
     arguments[1] = arguments[1].replace(/https:\/\/web.archive.org\/web\/\d+\//,'')
     origOpen.apply(this, arguments);
 };
-function addCss(cssCode) {
-  var styleElement = document.createElement("style");
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = cssCode;
-  } else {
-    styleElement.appendChild(document.createTextNode(cssCode));
-  }
-  document.getElementsByTagName("head")[0].appendChild(styleElement);
-}
-/**
- * @param {string} url
- */
+
 async function $import(url) {
   let css = await fetch(url).then((x) => x.text());
-  addCss(css);
+  $('<style>').html(css).appendTo('head');
 }
 
-/**
- * @param {string} url
- */
-async function $require(url) {
-  let js = await fetch(url).then((x) => x.text());
-  Function(js)();
-}
-
-let uBababot = {
-  cImport: $import,
-  jRequire: $require,
-};
-
-$('#loader-canvas, .pixel-lottery-btn').remove()
-const Event = class {
-  constructor(script, target) {
-    this.script = script;
-    this.target = target;
-
-    this._cancel = false;
-    this._replace = null;
-    this._stop = false;
-  }
-
-  preventDefault() {
-    this._cancel = true;
-  }
-  stopPropagation() {
-    this._stop = true;
-  }
-  replacePayload(payload) {
-    this._replace = payload;
-  }
-};
-
-let callbacks = [];
-window.addBeforeScriptExecuteListener = (f) => {
-  if (typeof f !== "function") {
-    throw new Error("Event handler must be a function.");
-  }
-  callbacks.push(f);
-};
-window.removeBeforeScriptExecuteListener = (f) => {
-  let i = callbacks.length;
-  while (i--) {
-    if (callbacks[i] === f) {
-      callbacks.splice(i, 1);
-    }
-  }
-};
-
-const dispatch = (script, target) => {
-  if (script.tagName !== "SCRIPT") {
-    return;
-  }
-
-  const e = new Event(script, target);
-
-  if (typeof window.onbeforescriptexecute === "function") {
-    try {
-      window.onbeforescriptexecute(e);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  for (const func of callbacks) {
-    if (e._stop) {
-      break;
-    }
-    try {
-      func(e);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  if (e._cancel) {
-    script.textContent = "";
-    script.remove();
-  } else if (typeof e._replace === "string") {
-    script.textContent = e._replace;
-  }
-};
-const observer = new MutationObserver((mutations) => {
-  for (const m of mutations) {
-    for (const n of m.addedNodes) {
-      dispatch(n, m.target);
-    }
-  }
-});
-observer.observe(document, {
-  childList: true,
-  subtree: true,
-});
-// This function uses allorigins.win which is a CORS proxy.
-// It allows javascript to fetch through all URLs.
-async function loadOldPixelplace() {
-    var url = encodeURIComponent('https://web.archive.org/web/20220220044849if_/https://pixelplace.io/js/script.min.js?v3=7025')
-    var code = await (await fetch(
-        `https://api.allorigins.win/get?url=${url}`
-                                 )).json()
-
-    eval(code.contents)
-}
-window.onbeforescriptexecute = (e) => {
-  console.log(e);
-  // Prevent execution of a script
-  if (e.script.innerText != '' && e.script.getAttribute('apology') != 'I as Owmince apologise to Bababoy for blocking his code') {
-      e.preventDefault()
-      e.script.remove()
-  }
-  if (
-    e.script.outerHTML.indexOf("script.min.js") != -1 &&
-    e.script.outerHTML.indexOf("web.archive.org") == -1
-  ) {
-    e.preventDefault();
-    e.script.remove();
-    loadOldPixelplace()
-  }
-};
 var BotScopeUUID = crypto.randomUUID();
 console.log("Bababot uuid:", BotScopeUUID);
-
-    window.VALIDATE_CAPTCHA = null;
-    window.onloadCallback = function () {
-        setTimeout(function () {
-            //Timeout because it mess with alert boxes on load..
-            grecaptcha.render('recaptcha', {
-                'sitekey': '6LcZpc8UAAAAAHHJCAYkiNoWaVCgafT_Juzbcsnr'
-            });
-        }, 1000);
-
-    };
-Function.prototype.clone = function () {
-  var that = this;
-  var temp = function temporary() {
-    return that.apply(this, arguments);
-  };
-  for (var key in this) {
-    if (this.hasOwnProperty(key)) {
-      temp[key] = this[key];
-    }
-  }
-  return temp;
-};
-
 var _i18n = {
   welcome: {
     tr: "Bababot'a hoşgeldin. Bababot GPLv3 ile lisanslıdır. Bababoy tarafından yapıldı",
@@ -293,6 +137,7 @@ var i18n = {
   },
 };
 var BababotScope = {};
+window.Bababot = BababotScope
 const palette = {
   order: [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -469,11 +314,11 @@ function createWorker(code) {
   );
 }
 
-uBababot.cImport("https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css");
-uBababot.cImport(
+$import("https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css");
+$import(
   "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
 );
-uBababot.cImport(
+$import(
   "https://raw.githubusercontent.com/bababoyy/bababot/main/menu.css"
 );
 
@@ -863,7 +708,7 @@ ${i18n.get("stop")}
 </fieldset>
 </div>
 </div>`);
-$(document.body).append(html);
+html.appendTo('body');
 const Menu = {
   canvas: document.createElement("canvas"),
   canvas_display: document.getElementById(`${BotScopeUUID}_canvas`),
@@ -1043,7 +888,7 @@ let bababot = $(
   "font-size": "0.9em",
 });
 $("#menu").draggable();
-$("#container").append(bababot);
+bababot.appendTo('#container')
 let buttons = $("#menu-buttons");
 let elem = $(
   '<a href="#" title="Bot Menu" class="grey margin-top-button"><img src="https://i.imgur.com/S5CHJJK.png" alt="icon"></a>'
@@ -1146,8 +991,7 @@ function createGraphWindow() {
       },
     },
   };
-  var ctxj = $(ctx.document.body);
-  ctxj.append(canvas);
+  canvas.appendTo(ctx.document.body);
   var chart = new Chart(canvas[0].getContext("2d"), {
     type: "line",
     options: options,
