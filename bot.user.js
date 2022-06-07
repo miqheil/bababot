@@ -953,7 +953,7 @@ Menu.dither_run.on("click", function () {
 });
 Menu.dither_list.val(localStorage.kernel);
 function createGraphWindow() {
-  var ctx = BababotScope.open("", "", "width=550,height=450");
+  var ctx = window.open("", "", "width=550,height=450");
   var interval = undefined;
   ctx.onunload = function () {
     clearInterval(interval);
