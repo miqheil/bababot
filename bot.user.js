@@ -206,7 +206,7 @@ function getPixelArray(x, y, sizeX, sizeY) {
  * @returns {number}
  */
 function resolveR(r) {
-  return palette.colors.find(color => {
+  return palette.colors.findIndex(color => {
     let colorR = parseInt(color.substring(1, 3), 16);
     return r === colorR;
   })
@@ -377,7 +377,7 @@ function restartTasker() {
     }
     while (
       Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT ||
-      [task.color,undefined].includes(BababotScope.BababotWS.BBY_get_pixel(task.x, task.y))
+      [task.color,-1].includes(BababotScope.BababotWS.BBY_get_pixel(task.x, task.y))
     ) {
       task = Tasker.getTask();
       Tasker.on_task && Tasker.on_task(task);
@@ -1109,7 +1109,7 @@ BababotScope.extensions = BababotScope.extensions || [];
 function filter(tasks) {
   return tasks.filter(
     (x) =>
-      x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != undefined
+      x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
   );
 }
 
