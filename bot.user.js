@@ -21,6 +21,7 @@
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
+/* globals $, toastr, chroma, Chart, interact */
 
 var origOpen = XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = function(_,url) {
@@ -197,7 +198,7 @@ function getPixelArray(x, y, sizeX, sizeY) {
   /**
    * @type {CanvasRenderingContext2D}
    */
-  let ctx = canvas.getContext("2d");
+  let ctx = document.getElementById('canvas').getContext("2d");
   return ctx.getImageData(x, y, sizeX, sizeY).data;
 }
 
@@ -431,9 +432,7 @@ BababotScope.multiBotDitherMode = true;
 function TaskerFilterPixelsByCoordinate(a, b) {
   Tasker.onTaskAction = function (task) {
     if (task == undefined) return;
-    return multiBotDitherMode
-      ? (task.x + task.y) % b < a
-      : (task.x + task.y) % b > a;
+    return (task.x + task.y) % b < a
   };
 }
 var brush = 1;
@@ -796,7 +795,7 @@ Menu.start.on("click", function () {
   Menu.coords = [Menu.x.val(), Menu.y.val()].map(Number);
   drawImage(Menu.coords, Menu.pixif);
   if (intervalCode == undefined) {
-    var context = canvas.getContext("2d");
+    var context = document.getElementById('canvas').getContext("2d");
     var children = $("#palette-buttons").children();
     for (let task of Tasker._tasks) {
       var color = chroma(children[task.color].title + "7F").css();
@@ -1315,7 +1314,7 @@ BababotScope.extensions.push([
   "amogus"
 ])
 BababotScope.extensions.push([
-  PatternExtensionGenerate(["L5","5L"]), 
+  PatternExtensionGenerate(["L5","5L"]),
   "gmod missing texture"
 ]);
 
@@ -1514,19 +1513,11 @@ BababotScope.extensions.push([
         }
         for (let y = start_coordinate[1]; y <= end_coordinate[1]; y++) {
           for (let x = start_coordinate[0]; x <= end_coordinate[0]; x++) {
-            let mvpModeX = (function () {
-              if ((y - start_coordinate[1]) % 2 == 0) {
-                return x;
-              } else {
-                return end_coordinate[0] - x + start_coordinate[0];
-              }
-            })();
-            const canvas_color = BababotScope.BababotWS.BBY_get_pixel(
-              mvpModeX,
-              y
-            );
-            if (canvas_color == color || canvas_color == -1) {
-              continue;
+            var mvpModeX;
+            if ((y - start_coordinate[1]) % 2 == 0) {
+                mvpModeX = x;
+            } else {
+                mvpModeX = end_coordinate[0] - x + start_coordinate[0];
             }
             Tasker.addTask({
               // @TODO Tasker
