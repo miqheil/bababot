@@ -377,7 +377,7 @@ function restartTasker() {
     }
     while (
       Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT ||
-      [task.color,-1].includes(BababotScope.BababotWS.BBY_get_pixel(task.x, task.y))
+      [task.color,undefined].includes(BababotScope.BababotWS.BBY_get_pixel(task.x, task.y))
     ) {
       task = Tasker.getTask();
       Tasker.on_task && Tasker.on_task(task);
@@ -437,6 +437,9 @@ function changePaintMode() {
     // "UI places as UI"
     toastr.info(i18n.get("ui_places_as_ui"));
     restartTasker();
+    BababotScope.BababotWS.BBY_on_message_send = function () {
+      return true;
+    };
   } else if (paintmode == 1) {
     // "UI places as Tasker"
     toastr.info(i18n.get("ui_places_as_tasker"));
@@ -1106,7 +1109,7 @@ BababotScope.extensions = BababotScope.extensions || [];
 function filter(tasks) {
   return tasks.filter(
     (x) =>
-      x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != -1
+      x.color != BababotScope.BababotWS.BBY_get_pixel(x.x, x.y) && x.color != undefined
   );
 }
 
@@ -1325,17 +1328,31 @@ BababotScope.extensions.push([
   },
   "Normalize Tasker events",
 ]);
-
+var fill_callback;
+var fill_ran = false
 BababotScope.extensions.push([
   function () {
+    if (fill_ran == false) {
+        fill_ran = true
+        interact("#canvas").on("click", function() {
+            if (fill_callback != undefined) {
+                fill_callback()
+            }
+        });
+    }
     function getCoordinate() {
       let raw = $("#coordinates").text();
       let arr = raw.split(",").map((x) => parseInt(x.replace(",", "")));
       return arr;
     }
     let start_coordinate, end_coordinate;
-    var code;
-    interact("#canvas").on("click", function () {
+    if (fill_callback) {
+        fill_callback = undefined
+        toastr.info('closed fill')
+        return
+    }
+    toastr.info('opened fill')
+    fill_callback = function () {
       if (start_coordinate) {
         end_coordinate = getCoordinate();
         let color = getSelectedColor();
@@ -1373,7 +1390,7 @@ BababotScope.extensions.push([
       interact("a[data-id='painting']").on("load", function () {
         $("a[data-id='painting']").css("display", "block");
       });
-    });
+    }
   },
   "fill",
 ]);
