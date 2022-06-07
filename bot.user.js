@@ -13,7 +13,6 @@
 // @require      https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js
-// @require      https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.2/chroma.min.js
 // @require      https://pixelplace.io/js/jquery-ui.min.js?v2=1
 // @require      https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
@@ -22,7 +21,6 @@
 // @grant        none
 // ==/UserScript==
 /* globals $, toastr, chroma, Chart, interact */
-
 var origOpen = XMLHttpRequest.prototype.open;
 XMLHttpRequest.prototype.open = function(_,url) {
     arguments[1] = arguments[1].replace(/https:\/\/web.archive.org\/web\/\d+\//,'')
@@ -187,7 +185,7 @@ const palette = {
     "#45FFC8",
   ],
 };
-
+var ctx = undefined
 /**
  * @param {number} x
  * @param {number} y
@@ -196,28 +194,22 @@ const palette = {
  * @returns {Uint8ClampedArray}
  */
 function getPixelArray(x, y, sizeX, sizeY) {
+  if (ctx == undefined) ctx = document.getElementById('canvas').getContext("2d")
   /**
    * @type {CanvasRenderingContext2D}
    */
-  let ctx = document.getElementById('canvas').getContext("2d");
   return ctx.getImageData(x, y, sizeX, sizeY).data;
 }
 
 /**
  * @param {number} r
- * @param {number} g
- * @param {number} b
  * @returns {number}
  */
-function resolveRGB(r, g, b) {
-  let hexStr =
-    "#" +
-    ("000000" + ((r << 16) | (g << 8) | b).toString(16))
-      .slice(-6)
-      .toUpperCase(); /*thx stackoverflow*/
-  return palette.colors.findIndex(function (elem) {
-    return elem.toUpperCase() === hexStr;
-  });
+function resolveR(r) {
+  return palette.colors.find(color => {
+    let colorR = parseInt(color.substring(1, 3), 16);
+    return r === colorR;
+  })
 }
 
 /**
@@ -228,9 +220,7 @@ function resolveRGB(r, g, b) {
 function getPixel(x, y) {
   const imgData = getPixelArray(x, y, 1, 1);
   const r = imgData[0];
-  const g = imgData[1];
-  const b = imgData[2];
-  return resolveRGB(r, g, b);
+  return resolveR(r);
 }
 Object.defineProperty(window, "WebSocket", {
   value: class extends WebSocket {
@@ -261,9 +251,7 @@ Object.defineProperty(window, "WebSocket", {
           }
         }
       });
-      Object.defineProperty(BababotScope, "BababotWS", {
-        value: this,
-      });
+      BababotScope.BababotWS = this
     }
     BBY_on(code, callback) {
       this.$callbacks[code] = this.$callbacks[code] || [];
@@ -449,9 +437,6 @@ function changePaintMode() {
     // "UI places as UI"
     toastr.info(i18n.get("ui_places_as_ui"));
     restartTasker();
-    BababotScope.BababotWS.BBY_on_message_send = function () {
-      return true;
-    };
   } else if (paintmode == 1) {
     // "UI places as Tasker"
     toastr.info(i18n.get("ui_places_as_tasker"));
@@ -513,116 +498,6 @@ BababotScope.UiPlacesTaskerTasks = UiPlacesTaskerTasks;
 BababotScope.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate;
 // "Bababot.js loaded. Made by Bababoy"
 console.log("%c", i18n.get("inform"), "font-family: system-ui");
-var call = function (info) {
-  var bio = document.querySelector(
-    "#profile > div > div > div:nth-child(2) > div.text-center.bio > span"
-  ).innerText;
-  console.debug(bio);
-  const regex = /img:(\d+$)/;
-  var match = bio.match(regex);
-  if (match) {
-    var canvId = match[1];
-    document.querySelector(
-      "#profile > div > div > div:nth-child(2) > div.user-avatar > img"
-    ).src = `https://pixelplace.io/canvas/${canvId}.png`;
-  }
-};
-var a = new MutationObserver(call);
-setTimeout(function () {
-  a.observe(
-    document.querySelector(
-      "#profile > div > div > div:nth-child(2) > div.profile-name"
-    ),
-    { attributes: true }
-  );
-}, 2000);
-const Palette = {
-  order: [
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-  ],
-  colors: [
-    "#FFFFFF",
-    "#C4C4C4",
-    "#888888",
-    "#555555",
-    "#222222",
-    "#000000",
-    "#006600",
-    "#22B14C",
-    "#02BE01",
-    "#51E119",
-    "#94E044",
-    "#FBFF5B",
-    "#E5D900",
-    "#E6BE0C",
-    "#E59500",
-    "#A06A42",
-    "#99530D",
-    "#633C1F",
-    "#6B0000",
-    "#9F0000",
-    "#E50000",
-    "#FF3904",
-    "#BB4F00",
-    "#FF755F",
-    "#FFC49F",
-    "#FFDFCC",
-    "#FFA7D1",
-    "#CF6EE4",
-    "#EC08EC",
-    "#820080",
-    "#5100FF",
-    "#020763",
-    "#0000EA",
-    "#044BFF",
-    "#6583CF",
-    "#36BAFF",
-    "#0083C7",
-    "#00D3DD",
-    "#45FFC8",
-  ],
-};
-/**
- * @type {ColorPacket[]}
- */
-const Colors = [
-  { code: "0", hex: "#FFFFFF" },
-  { code: "1", hex: "#C4C4C4" },
-  { code: "2", hex: "#888888" },
-  { code: "3", hex: "#555555" },
-  { code: "4", hex: "#222222" },
-  { code: "5", hex: "#000000" },
-  { code: "6", hex: "#006600" },
-  { code: "7", hex: "#22B14C" },
-  { code: "8", hex: "#02BE01" },
-  { code: "10", hex: "#94E044" },
-  { code: "11", hex: "#FBFF5B" },
-  { code: "12", hex: "#E5D900" },
-  { code: "13", hex: "#E6BE0C" },
-  { code: "14", hex: "#E59500" },
-  { code: "15", hex: "#A06A42" },
-  { code: "16", hex: "#99530D" },
-  { code: "17", hex: "#633C1F" },
-  { code: "18", hex: "#6B0000" },
-  { code: "19", hex: "#9F0000" },
-  { code: "20", hex: "#E50000" },
-  { code: "22", hex: "#BB4F00" },
-  { code: "23", hex: "#FF755F" },
-  { code: "24", hex: "#FFC49F" },
-  { code: "25", hex: "#FFDFCC" },
-  { code: "26", hex: "#FFA7D1" },
-  { code: "27", hex: "#CF6EE4" },
-  { code: "28", hex: "#EC08EC" },
-  { code: "29", hex: "#820080" },
-  { code: "31", hex: "#020763" },
-  { code: "32", hex: "#0000EA" },
-  { code: "33", hex: "#044BFF" },
-  { code: "34", hex: "#6583CF" },
-  { code: "35", hex: "#36BAFF" },
-  { code: "36", hex: "#0083C7" },
-  { code: "37", hex: "#00D3DD" },
-];
 
 /**
  * @param {number} pixelplaceColor
@@ -942,8 +817,6 @@ function extension_load() {
     Menu.extensions_list.append(option);
   }
 }
-setInterval(extension_load, 30_000);
-setTimeout(extension_load, 5_000);
 Menu.extension_run.on("click", function () {
   BababotScope.extensions.find((a) => a[1] == Menu.extensions_list.val())[0]();
 });
@@ -1097,7 +970,7 @@ function putPixels(subpxArr) {
 var worker_iprocess;
 function generateImageWorker() {
   worker_iprocess = createWorker(
-      `importScripts("https://cdn.jsdelivr.net/gh/bababoyy@ff982be/bababot/dither.js")
+      `importScripts("https://cdn.jsdelivr.net/gh/bababoyy/bababot/dither.js")
       const Colors = [
         { code: "0", rgb: [255, 255, 255] },
         { code: "1", rgb: [196, 196, 196] },
@@ -1512,7 +1385,7 @@ BababotScope.extensions.push([
         localStorage.timeout +
         " at the moment. Set timeout to (ms):"
     );
-    if (isNaN(timeout)) {
+    if (isNaN(parseInt(timeout))) {
       return;
     }
     localStorage.timeout = parseInt(timeout);
@@ -1523,10 +1396,11 @@ BababotScope.extensions.push([
 BababotScope.extensions.push([
   function () {
     var name = prompt("Go to user:");
-    $($('.messages div a[class="user open-profile"]')[0])
+    $($('.messages div a[class="user open-profile"]').get(0))
       .attr("data-profile", name)
       .attr("data-id", name)
       .click();
   },
   "Go to user profile",
 ]);
+extension_load()
