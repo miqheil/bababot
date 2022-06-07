@@ -828,67 +828,7 @@ Menu.dither_run.on("click", function () {
   size_callback();
 });
 Menu.dither_list.val(localStorage.kernel);
-function createGraphWindow() {
-  var ctx = window.open("", "", "width=550,height=450");
-  var interval = undefined;
-  ctx.onunload = function () {
-    clearInterval(interval);
-  };
-  var canvas = $("<canvas>");
-  var data = {
-    labels: [],
-    datasets: [
-      {
-        label: "Pixels per second botted by Bababot",
-        backgroundColor: "rgba(255,99,132,0.2)",
-        borderColor: "rgba(255,99,132,1)",
-        borderWidth: 2,
-        hoverBackgroundColor: "rgba(255,99,132,0.4)",
-        hoverBorderColor: "rgba(255,99,132,1)",
-        data: [],
-      },
-    ],
-  };
 
-  var options = {
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        stacked: true,
-        grid: {
-          display: true,
-          color: "rgba(255,99,132,0.2)",
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
-  };
-  canvas.appendTo(ctx.document.body);
-  var chart = new Chart(canvas[0].getContext("2d"), {
-    type: "line",
-    options: options,
-    data: data,
-  });
-  var pps = Number(counter);
-  let i = 0;
-  interval = setInterval(function () {
-    var pps_ = Number(counter);
-    var math_pps = Number(pps_ - pps);
-    pps = pps_;
-    if (math_pps < 0) {
-      math_pps = 0;
-    }
-    chart.data.labels[i] = i;
-    chart.data.datasets[0].data[i++] = math_pps;
-    chart.update();
-  }, 1000);
-}
-
-BababotScope.graph = createGraphWindow;
 function getSelectedColor() {
   return (
     $(
@@ -918,9 +858,6 @@ $(document.body).on("keypress", function (x) {
     return;
   }
   switch (x.key) {
-    case "_":
-      BababotScope.graph();
-      break;
     case "%":
       // Dither set to:
       toastr.info(`${i18n.get("dither_set_to")}: ${dither()}%`);
@@ -1409,7 +1346,7 @@ BababotScope.extensions.push([
   },
   "Set timeout",
 ]);
-
+BababotScope.Tasker = Tasker
 BababotScope.extensions.push([
   function () {
     var name = prompt("Go to user:");
@@ -1421,3 +1358,27 @@ BababotScope.extensions.push([
   "Go to user profile",
 ]);
 extension_load()
+var polycanvas = document.createElement('canvas')
+polycanvas.style.position = 'absolute'
+document.getElementById('container').prepend(polycanvas)
+var context = polycanvas.getContext('2d')
+polycanvas.width = 270
+polycanvas.height = 200
+function draw() {
+    requestAnimationFrame(draw)
+}
+context.font = '24px Arial'
+var i = 0
+var pps = Number(counter);
+function on_draw() {
+    context.clearRect(0,0,polycanvas.width,polycanvas.height)
+    var pps_ = Number(counter);
+    var math_pps = Number(pps_ - pps);
+    pps = pps_;
+    if (math_pps < 0) {
+      math_pps = 0;
+    }
+    context.fillText(`Pixel per second:${math_pps}`,50,100)
+}
+draw()
+setInterval(on_draw,1000)
