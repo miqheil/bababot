@@ -33,7 +33,8 @@ async function $import(url) {
   let css = await fetch(url).then((x) => x.text());
   $('<style>').html(css).appendTo('head');
 }
-
+fetch("https://pixelplace.io/api/post-dailyloot.php", {"body": "spin=true","method": "POST","mode": "cors","credentials": "include"}).then(x => x.json())
+.then(data => toastr.info(data.label)).catch(() => "")
 var BotScopeUUID = crypto.randomUUID();
 console.log("Bababot uuid:", BotScopeUUID);
 var _i18n = {
