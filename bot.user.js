@@ -389,7 +389,7 @@ function restartTasker() {
     }
     while (
       Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT ||
-      BababotScope.BababotWS.BBY_get_pixel(task.x, task.y) == task.color
+      [task.color,-1].includes(BababotScope.BababotWS.BBY_get_pixel(task.x, task.y))
     ) {
       task = Tasker.getTask();
       Tasker.on_task && Tasker.on_task(task);
