@@ -21,20 +21,24 @@
 // @grant        none
 // ==/UserScript==
 /* globals $, toastr, chroma, Chart, interact */
-var origOpen = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function(_,url) {
-    arguments[1] = arguments[1].replace(/https:\/\/web.archive.org\/web\/\d+\//,'')
-    origOpen.apply(this, arguments);
-};
+const IMAGE_CONVERTER_URL = 'https://cdn.jsdelivr.net/gh/bababoyy/bababot/workers/image_converter.js'
+const TASK_PROCESSOR_URL  = 'https://cdn.jsdelivr.net/gh/bababoyy/bababot/workers/task_processor.js'
+const BABABOT_CSS_URL     = 'https://cdn.jsdelivr.net/gh/bababoyy/bababot/bababot.css'
+const DAILY_LOOT_URL      = 'https://pixelplace.io/api/post-dailyloot.php'
+
+function createWorker(code) {
+  return new Worker(
+    URL.createObjectURL(new Blob([code], { type: "text/javascript" }))
+  );
+}
 
 async function $import(url) {
   let css = await fetch(url).then((x) => x.text());
   $('<style>').html(css).appendTo('head');
 }
-fetch("https://pixelplace.io/api/post-dailyloot.php", {"body": "spin=true","method": "POST","mode": "cors","credentials": "include"}).then(x => x.json())
-.then(data => toastr.info(data.label)).catch(() => "")
-var BotScopeUUID = crypto.randomUUID();
-console.log("Bababot uuid:", BotScopeUUID);
+$import(BABABOT_CSS_URL);
+fetch(DAILY_LOOT_URL, { "body": "spin=true", "method": "POST", "mode": "cors", "credentials": "include" }).then(x => x.json())
+  .then(data => toastr.info(data.label)).catch(() => "")
 var _i18n = {
   welcome: {
     tr: "Bababot'a hoşgeldin. Bababot GPLv3 ile lisanslıdır. Bababoy tarafından yapıldı",
@@ -126,11 +130,7 @@ var _i18n = {
   },
 };
 
-// determine if user is turkish or not
-function isTurkish() {
-  return window.navigator.language.includes("tr");
-}
-var mode = isTurkish() ? "tr" : "en";
+var mode = window.navigator.language.includes("tr") ? "tr" : "en";
 var i18n = {
   get: function (key) {
     return _i18n[key][mode];
@@ -298,51 +298,25 @@ if (localStorage.firstTime == undefined) {
 localStorage.timeout = localStorage.timeout || 40;
 BababotScope.extensions = BababotScope.extensions || [];
 
-function createWorker(code) {
-  return new Worker(
-    URL.createObjectURL(new Blob([code], { type: "text/javascript" }))
-  );
+function BababotPixelColorCheck({x,y,color}) {
+  const coord_pixel_color = BababotScope.BababotWS.BBY_get_pixel(x,y)
+  return coord_pixel_color != -1 && coord_pixel_color != color
 }
-
-$import("https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css");
-$import(
-  "https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
-);
-$import(
-  "https://raw.githubusercontent.com/bababoyy/bababot/main/menu.css"
-);
-
+function PrepareTasks(tasks) {
+  return tasks.filter(BababotPixelColorCheck)
+}
+BababotScope.BababotPixelColorCheck = BababotPixelColorCheck
 class TaskerFactory {
   static EMPTY_FUNCTION = () => true;
   static PREVENT_DEFAULT = false;
   constructor() {
     this._tasks = [];
     this.onImageTaskReorganize = undefined;
-    this._i = 0x0;
     this.onTaskAction = TaskerFactory.EMPTY_FUNCTION;
     this.onShuffleGranted = TaskerFactory.EMPTY_FUNCTION;
   }
   addTask(callback) {
     this._tasks.push(callback);
-  }
-  getTask() {
-    let task = this._tasks.splice(0, 1);
-    if (task.length == 1) {
-      task = task[0];
-    } else {
-      task = undefined;
-    }
-    if (task != undefined) {
-      this._i++;
-    }
-    return task;
-  }
-  reset() {
-    this._i = 0;
-  }
-  destroy() {
-    this._tasks = [];
-    this.reset();
   }
 }
 let Tasker = new TaskerFactory();
@@ -367,29 +341,15 @@ BababotScope.intervalCode = intervalCode;
 function restartTasker() {
   clearInterval(intervalCode);
   intervalCode = setInterval(function () {
-    let task = Tasker.getTask();
+    if (Tasker._tasks.length != 0) Tasker._tasks = PrepareTasks(Tasker._tasks)
+    let task = Tasker._tasks.shift();
     if (task == undefined) {
       Tasker.onTaskAction(undefined);
-      if (Tasker._i != 0) {
-        Tasker.destroy();
-      }
       return;
-    }
-    while (
-      Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT ||
-      [task.color,-1].includes(BababotScope.BababotWS.BBY_get_pixel(task.x, task.y))
-    ) {
-      task = Tasker.getTask();
-      Tasker.on_task && Tasker.on_task(task);
-      if (task == undefined) {
-        if (Tasker._i != 0) {
-          Tasker.destroy();
-        }
-        return;
-      }
     }
     if (task.mode == undefined) {
       BababotScope.BababotWS.BBY_put_pixel(task.x, task.y, task.color);
+      GUIPostPixelSend(task)
       counter++;
     } else {
       BababotScope.BababotWS.BBY_emit("p", [
@@ -399,6 +359,7 @@ function restartTasker() {
         task.pixelsize,
         task.mode,
       ]);
+      GUIPostPixelSend(task)
       counter++;
     }
   }, localStorage.timeout);
@@ -510,37 +471,37 @@ function pixelPlaceToPixif(pixelplaceColor) {
   return String.fromCharCode("0".charCodeAt(0) + parseInt(pixelplaceColor));
 }
 var html = $(`<div id="menu" style="display: none;">
-<div class="people-using-this-bot-hate-your-ban-owmince">
+<div class="lovely-division">
 <div class="gradient_slider"></div>
 
 <fieldset>
 <legend>${i18n.get("image_botting")}</legend>
-<canvas id="${BotScopeUUID}_canvas" width="100" height="100"></canvas>
+<canvas id="Bababot_canvas" width="100" height="100"></canvas>
 <div>
-<input id="${BotScopeUUID}_width" type="number" class="numinput along" placeholder="${i18n.get(
+<input id="Bababot_width" type="number" class="numinput along" placeholder="${i18n.get(
   "width"
-)}" /><input id="${BotScopeUUID}_height"
+)}" /><input id="Bababot_height"
 type="number"
 placeholder="Height"
 class="numinput along"
 />
 </div>
-<label for="${BotScopeUUID}_file" class="numinput along text"
+<label for="Bababot_file" class="numinput along text"
 >${i18n.get("image_file")}</label
-><input type="file" id="${BotScopeUUID}_file" style="display: none" />
-<div class="smalltext" id="${BotScopeUUID}_original"></div>
+><input type="file" id="Bababot_file" style="display: none" />
+<div class="smalltext" id="Bababot_original"></div>
 <div>
-<input id="${BotScopeUUID}_x" type="number" class="numinput along" placeholder="X" /><br /><input
-                                                                          id="${BotScopeUUID}_y"
+<input id="Bababot_x" type="number" class="numinput along" placeholder="X" /><br /><input
+                                                                          id="Bababot_y"
 type="number"
 class="numinput along"
 placeholder="Y"
 />
 </div>
-<button class="numinput butbigger along text" id="${BotScopeUUID}_start">${i18n.get(
+<button class="numinput butbigger along text" id="Bababot_start">${i18n.get(
   "start"
 )}</button><br /><button
-                                                                                 id="${BotScopeUUID}_stop"
+                                                                                 id="Bababot_stop"
 class="numinput butbigger along text"
 >
 ${i18n.get("stop")}
@@ -553,11 +514,11 @@ ${i18n.get("stop")}
 
 <div class="smalltext">${i18n.get("select")}</div>
 <div class="select">
-<select id="${BotScopeUUID}_select">
+<select id="Bababot_select">
 </select>
 <div class="select_arrow"></div>
 </div>
-<div class="numinput along text" id="${BotScopeUUID}_run">${i18n.get(
+<div class="numinput along text" id="Bababot_run">${i18n.get(
   "run"
 )}</div>
 
@@ -565,7 +526,7 @@ ${i18n.get("stop")}
 
 <div class="smalltext">${i18n.get("select_dither")}</div>
 <div class="select">
-<select id="${BotScopeUUID}_dither">
+<select id="Bababot_dither">
 <option value="">Default</option>
 <option value="FloydSteinberg" selected="">FloydSteinberg</option>
 <option value="Stucki">Stucki</option>
@@ -580,7 +541,7 @@ ${i18n.get("stop")}
 </select>
 <div class="select_arrow"></div>
 </div>
-<div class="numinput along text" id="${BotScopeUUID}_dither_run">${i18n.get(
+<div class="numinput along text" id="Bababot_dither_run">${i18n.get(
   "run_dither"
 )}</div>
 </fieldset>
@@ -589,19 +550,19 @@ ${i18n.get("stop")}
 html.appendTo('body');
 const Menu = {
   canvas: document.createElement("canvas"),
-  canvas_display: document.getElementById(`${BotScopeUUID}_canvas`),
-  x: $(`#${BotScopeUUID}_x`),
-  y: $(`#${BotScopeUUID}_y`),
-  width: $(`#${BotScopeUUID}_width`),
-  height: $(`#${BotScopeUUID}_height`),
-  file: $(`#${BotScopeUUID}_file`),
-  start: $(`#${BotScopeUUID}_start`),
-  stop: $(`#${BotScopeUUID}_stop`),
-  extensions_list: $(`#${BotScopeUUID}_select`),
-  extension_run: $(`#${BotScopeUUID}_run`),
-  dither_list: $(`#${BotScopeUUID}_dither`),
-  dither_run: $(`#${BotScopeUUID}_dither_run`),
-  original: $(`#${BotScopeUUID}_original`),
+  canvas_display: document.getElementById(`Bababot_canvas`),
+  x: $(`#Bababot_x`),
+  y: $(`#Bababot_y`),
+  width: $(`#Bababot_width`),
+  height: $(`#Bababot_height`),
+  file: $(`#Bababot_file`),
+  start: $(`#Bababot_start`),
+  stop: $(`#Bababot_stop`),
+  extensions_list: $(`#Bababot_select`),
+  extension_run: $(`#Bababot_run`),
+  dither_list: $(`#Bababot_dither`),
+  dither_run: $(`#Bababot_dither_run`),
+  original: $(`#Bababot_original`),
   img: new Image(),
   pixif: undefined,
   state: false,
@@ -615,29 +576,7 @@ BababotScope.Menu = Menu;
  */
 function drawImage(coords, image) {
   var tasks = [];
-  var worker_tasks = createWorker(`
-onmessage = function(v) {
-var args = v.data
-var tasks = []
-for (let yAxis = 0; yAxis < args.image.length; yAxis++) {
-for (let xAxis = 0; xAxis < args.image[yAxis].length; xAxis++) {
-let pixel = args.image[yAxis][xAxis];
-let [x, y] = args.coords;
-x += xAxis;
-y += yAxis;
-var color = pixel.charCodeAt(0) - "0".charCodeAt(0);
-if (color == 64) {
-    ${localStorage.usetransparent == "true" ? "continue" : "color = 1"};
-}
-tasks.push({
-    x: x,
-    y: y,
-    color: color,
-});
-}
-}
-postMessage(tasks)
-}`);
+  var worker_tasks = createWorker(`importScripts("${TASK_PROCESSOR_URL}")`);
   worker_tasks.onmessage = function (tasks_raw) {
     var tasks = tasks_raw.data;
     tasks.forEach((task) => Tasker.addTask(task));
@@ -652,9 +591,10 @@ postMessage(tasks)
         tasks.forEach((task) => Tasker.addTask(task));
       }
     };
+    worker_tasks.terminate()
     delete worker_tasks;
   };
-  if (Tasker._i != 0) {
+  if (Tasker._tasks.length != 0) {
     return;
   }
   worker_tasks.postMessage({ coords: coords, image: image });
@@ -813,8 +753,8 @@ document.onpaste = function (event) {
   }
 };
 function extension_load() {
-  if ($(`#${BotScopeUUID}_select option`).length != 0) return;
-  $(`#${BotScopeUUID}_select option`).remove();
+  if ($(`#Bababot_select option`).length != 0) return;
+  $(`#Bababot_select option`).remove();
   for (let extension of BababotScope.extensions) {
     var option = $("<option>").html(extension[1]);
     Menu.extensions_list.append(option);
@@ -909,118 +849,7 @@ function putPixels(subpxArr) {
 }
 var worker_iprocess;
 function generateImageWorker() {
-  worker_iprocess = createWorker(
-      `importScripts("https://cdn.jsdelivr.net/gh/bababoyy/bababot/dither.js")
-      const Colors = [
-        { code: "0", rgb: [255, 255, 255] },
-        { code: "1", rgb: [196, 196, 196] },
-        { code: "2", rgb: [136, 136, 136] },
-        { code: "3", rgb: [85, 85, 85] },
-        { code: "4", rgb: [34, 34, 34] },
-        { code: "5", rgb: [0, 0, 0] },
-        { code: "6", rgb: [0, 102, 0] },
-        { code: "7", rgb: [34, 177, 76] },
-        { code: "8", rgb: [2, 190, 1] },
-        { code: "10", rgb: [148, 224, 68] },
-        { code: "11", rgb: [251, 255, 91] },
-        { code: "12", rgb: [229, 217, 0] },
-        { code: "13", rgb: [230, 190, 12] },
-        { code: "14", rgb: [229, 149, 0] },
-        { code: "15", rgb: [160, 106, 66] },
-        { code: "16", rgb: [153, 83, 13] },
-        { code: "17", rgb: [99, 60, 31] },
-        { code: "18", rgb: [107, 0, 0] },
-        { code: "19", rgb: [159, 0, 0] },
-        { code: "20", rgb: [229, 0, 0] },
-        { code: "22", rgb: [187, 79, 0] },
-        { code: "23", rgb: [255, 117, 95] },
-        { code: "24", rgb: [255, 196, 159] },
-        { code: "25", rgb: [255, 223, 204] },
-        { code: "26", rgb: [255, 167, 209] },
-        { code: "27", rgb: [207, 110, 228] },
-        { code: "28", rgb: [236, 8, 236] },
-        { code: "29", rgb: [130, 0, 128] },
-        { code: "31", rgb: [2, 7, 99] },
-        { code: "32", rgb: [0, 0, 234] },
-        { code: "33", rgb: [4, 75, 255] },
-        { code: "34", rgb: [101, 131, 207] },
-        { code: "35", rgb: [54, 186, 255] },
-        { code: "36", rgb: [0, 131, 199] },
-        { code: "37", rgb: [0, 211, 221] },
-      ];
-      function generatePixif(img, width) {
-        let output = "";
-        for (let i = 0; i < img.length; i += 4) {
-          if ((i / 4) % width === 0 && i != 0) {
-            output += "\\n";
-          }
-          /**
-           * @type {RGB}
-           */
-          const colorInfo = {
-            r: img[i],
-            g: img[i + 1],
-            b: img[i + 2],
-          };
-          /**
-           * @type {number}
-           */
-          let color;
-          // #BABAB0 's red value is 186
-          if (colorInfo.r == 186) {
-            color = 64;
-          }
-          for (let pixelColor of Colors) {
-            if (
-              pixelColor.rgb.join("") ==
-              [colorInfo.r, colorInfo.g, colorInfo.b].join("")
-            ) {
-              color = pixelColor.code;
-            }
-          }
-          if (color == undefined) {
-            color = 64;
-          }
-          output += String.fromCharCode("0".charCodeAt(0) + parseInt(color));
-        }
-        return output.split("\\n");
-      }
-      function lookThroughTransparentPixel(pixels) {
-        var transparent_index = [];
-        for (let i = 0; i < pixels.length; i += 4) {
-          if (pixels[i] == 186 && pixels[i + 1] == 186 && pixels[i + 2] == 176) {
-            transparent_index.push(i);
-          }
-        }
-        return transparent_index;
-      }
-      onmessage = function (i) {
-        var q = new RgbQuant({
-          colors: 40,
-          palette: Colors.map(x => x.rgb),
-          reIndex: !0,
-          dithKern: i.data.kernel,
-          dithDelta: 0.05,
-          useCache: !1,
-        });
-
-        console.log(i);
-        var transparent_index = lookThroughTransparentPixel(i.data.img.data);
-        console.time("Image load");
-        q.sample(i.data.img.data);
-        console.timeLog("Image load");
-        var r = q.reduce(i.data.img.data);
-        console.timeLog("Image load");
-        for (let index of transparent_index) {
-          r[index] = 186;
-          r[index + 1] = 186;
-          r[index + 2] = 176;
-        }
-        var pixif = generatePixif(r, i.data.img.width);
-        console.timeEnd("Image load");
-        postMessage([r, pixif]);
-      };`
-  );
+  worker_iprocess = createWorker(`importScripts("${IMAGE_CONVERTER_URL}")`)
   worker_iprocess.onmessage = (pkg) => {
     var data = pkg.data;
     var i = Menu.canvas;
@@ -1051,7 +880,7 @@ function filter(tasks) {
 }
 
 function PatternExtensionGenerate(pattern) {
-  return function() {
+  return function () {
     Tasker.onTaskAction = function (task) {
       if (task == undefined) return;
       let chunkCoord = [
@@ -1085,12 +914,12 @@ BababotScope.extensions.push([
   "amogus"
 ])
 BababotScope.extensions.push([
-  PatternExtensionGenerate(["L5","5L"]),
+  PatternExtensionGenerate(["L5", "5L"]),
   "gmod missing texture"
 ]);
 
 BababotScope.extensions.push([
-  PatternExtensionGenerate(["S","J","0","J","S"]),
+  PatternExtensionGenerate(["S", "J", "0", "J", "S"]),
   "trans",
 ]);
 BababotScope.extensions.push([
@@ -1103,9 +932,9 @@ BababotScope.extensions.push([
 ]);
 
 BababotScope.extensions.push([
-  function() {
+  function () {
     PatternExtensionGenerate(BababotScope.Menu.pixif)()
-  },"Generate pattern by image"
+  }, "Generate pattern by image"
 ])
 
 BababotScope.extensions.push([
@@ -1270,12 +1099,12 @@ var fill_ran = false
 BababotScope.extensions.push([
   function () {
     if (fill_ran == false) {
-        fill_ran = true
-        interact("#canvas").on("click", function() {
-            if (fill_callback != undefined) {
-                fill_callback()
-            }
-        });
+      fill_ran = true
+      interact("#canvas").on("click", function () {
+        if (fill_callback != undefined) {
+          fill_callback()
+        }
+      });
     }
     function getCoordinate() {
       let raw = $("#coordinates").text();
@@ -1284,9 +1113,9 @@ BababotScope.extensions.push([
     }
     let start_coordinate, end_coordinate;
     if (fill_callback) {
-        fill_callback = undefined
-        toastr.info('closed fill')
-        return
+      fill_callback = undefined
+      toastr.info('closed fill')
+      return
     }
     toastr.info('opened fill')
     fill_callback = function () {
@@ -1300,9 +1129,9 @@ BababotScope.extensions.push([
           for (let x = start_coordinate[0]; x <= end_coordinate[0]; x++) {
             var mvpModeX;
             if ((y - start_coordinate[1]) % 2 == 0) {
-                mvpModeX = x;
+              mvpModeX = x;
             } else {
-                mvpModeX = end_coordinate[0] - x + start_coordinate[0];
+              mvpModeX = end_coordinate[0] - x + start_coordinate[0];
             }
             Tasker.addTask({
               // @TODO Tasker
@@ -1336,8 +1165,8 @@ BababotScope.extensions.push([
   function () {
     var timeout = prompt(
       "Your timeout is " +
-        localStorage.timeout +
-        " at the moment. Set timeout to (ms):"
+      localStorage.timeout +
+      " at the moment. Set timeout to (ms):"
     );
     if (isNaN(parseInt(timeout))) {
       return;
@@ -1360,25 +1189,36 @@ BababotScope.extensions.push([
 extension_load()
 var polycanvas = document.createElement('canvas')
 polycanvas.style.position = 'absolute'
+polycanvas.style.pointerEvents = 'none'
 document.getElementById('container').prepend(polycanvas)
 var context = polycanvas.getContext('2d')
-polycanvas.width = 270
-polycanvas.height = 200
-function draw() {
-    requestAnimationFrame(draw)
+function doResize() {
+  polycanvas.width = innerWidth
+  polycanvas.height = innerHeight
 }
-context.font = '24px Arial'
+window.addEventListener('resize', doResize, false)
+doResize()
 var i = 0
 var pps = Number(counter);
-function on_draw() {
-    context.clearRect(0,0,polycanvas.width,polycanvas.height)
-    var pps_ = Number(counter);
-    var math_pps = Number(pps_ - pps);
-    pps = pps_;
-    if (math_pps < 0) {
-      math_pps = 0;
-    }
-    context.fillText(`Pixel per second:${math_pps}`,50,100)
+var math_pps, pps_ = [0, 0];
+var latest_task = 'X: N/A Y: N/A Color: N/A'
+function draw() {
+  context.clearRect(0, 0, polycanvas.width, polycanvas.height)
+  context.fillText(`Pixel per second:${math_pps}`, 50, 100)
+  context.fillText(`Latest task: ${latest_task}`, 50, 150)
+  requestAnimationFrame(draw)
+}
+context.font = '24px Arial'
+function calcuatePPS() {
+  pps_ = Number(counter);
+  math_pps = Number(pps_ - pps);
+  pps = pps_;
+  if (math_pps < 0) {
+    math_pps = 0;
+  }
+}
+function GUIPostPixelSend({x,y,color}) {
+  latest_task = `X: ${x} Y: ${y} Color: ${color}`
 }
 draw()
-setInterval(on_draw,1000)
+setInterval(calcuatePPS, 1000)
