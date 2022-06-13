@@ -60,7 +60,9 @@ function generatePixif(img, width) {
     }
     for (let pixelColor of Colors) {
       if (
-        pixelColor.rgb[0] == colorInfo.r
+        pixelColor.rgb[0] == colorInfo.r &&
+        pixelColor.rgb[1] == colorInfo.g &&
+        pixelColor.rgb[2] == colorInfo.b
       ) {
         color = pixelColor.code;
       }
