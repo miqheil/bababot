@@ -16,6 +16,7 @@
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
+Object.defineProperty(window.console,'log',{value:console.log,writable:false})
 var j = $
 function drag(selector) {
   j(selector).draggable()
@@ -66,6 +67,7 @@ const palette = {
     "#00D3DD",
     "#45FFC8",
   ],
+  color_hashes: [16777215,12895428,8947848,5592405,2236962,0,26112,2273612,179713,5366041,9756740,16514907,15063296,15121932,15045888,10512962,10048269,6503455,7012352,10420224,15007744,16726276,12275456,16741727,16762015,16768972,16754641,13594340,15468780,8519808,5308671,132963,234,281599,6652879,3586815,33735,54237,4587464]
 };
 var ctx = undefined
 /**
@@ -87,10 +89,10 @@ function getPixelArray(x, y, sizeX, sizeY) {
  * @param {number} r
  * @returns {number}
  */
-function resolveR(r) {
-  return palette.colors.findIndex(color => {
-    let colorR = parseInt(color.substring(1, 3), 16);
-    return r === colorR;
+function findColor([r,g,b,a]) {
+	var hash = (r<<16)+(g<<8)+(b)
+  return palette.color_hashes.findIndex(color => {
+    return hash == color;
   })
 }
 
@@ -101,8 +103,7 @@ function resolveR(r) {
  */
 function getPixel(x, y) {
   const imgData = getPixelArray(x, y, 1, 1);
-  const r = imgData[0];
-  return resolveR(r);
+  return findColor(imgData);
 }
 Object.defineProperty(window, "WebSocket", {
   value: class extends WebSocket {
@@ -286,6 +287,7 @@ var i18n = {
   },
 };
 var BababotScope = {};
+BababotScope.palette = palette;
 window.Bababot = BababotScope
 
 if (localStorage.firstTime == undefined) {
@@ -585,6 +587,7 @@ ${i18n.get("stop")}
         Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks, [
           image[0].length,
           image.length,
+		  ...coords
         ]);
       }
       Tasker.onTaskAction = function (task) {
