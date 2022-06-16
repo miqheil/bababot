@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         Bababot.js
 // @namespace    https://github.com/bababoyy
-// @version      v3.5
+// @version      v3.51
 // @license      GPLv3
 // @description  Bababot
 // @author       Bababoy
@@ -584,11 +584,12 @@ ${i18n.get("stop")}
       var tasks = tasks_raw.data;
       tasks.forEach((task) => Tasker.addTask(task));
       if (Tasker.onImageTaskReorganize) {
-        Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks, [
+        Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks,
           image[0].length,
           image.length,
-		  ...coords
-        ]);
+		  coords[0],
+		  coords[1]
+        );
       }
       Tasker.onTaskAction = function (task) {
         if (task == undefined) {
