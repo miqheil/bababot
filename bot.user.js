@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         Bababot.js
 // @namespace    https://github.com/bababoyy
-// @version      v3.51
+// @version      v3.52
 // @license      GPLv3
 // @description  Bababot
 // @author       Bababoy
@@ -17,6 +17,11 @@
 // @grant        none
 // ==/UserScript==
 Object.defineProperty(window.console,'log',{value:console.log,writable:false})
+function getCoordinate() {
+  let raw = $("#coordinates").text();
+  let arr = raw.split(",").map((x) => parseInt(x.replace(",", "")));
+  return arr;
+}
 var j = $
 function drag(selector) {
   j(selector).draggable()
@@ -90,7 +95,7 @@ function getPixelArray(x, y, sizeX, sizeY) {
  * @returns {number}
  */
 function findColor([r,g,b,a]) {
-	var hash = (r<<16)+(g<<8)+(b)
+  var hash = (r<<16)+(g<<8)+(b)
   return palette.color_hashes.findIndex(color => {
     return hash == color;
   })
@@ -288,6 +293,7 @@ var i18n = {
 };
 var BababotScope = {};
 BababotScope.palette = palette;
+BababotScope.getCoordinate = getCoordinate;
 window.Bababot = BababotScope
 
 if (localStorage.firstTime == undefined) {
@@ -298,7 +304,7 @@ if (localStorage.firstTime == undefined) {
     { timeOut: 9500 }
   );
 }
-document.addEventListener('DOMContentLoaded', function main() {
+async function main() {
   localStorage.timeout = localStorage.timeout || 40;
   BababotScope.extensions = BababotScope.extensions || [];
 
@@ -345,6 +351,7 @@ document.addEventListener('DOMContentLoaded', function main() {
   function restartTasker() {
     clearInterval(intervalCode);
     intervalCode = setInterval(function () {
+      Tasker._tasks = Tasker._tasks.filter(Tasker.onTaskAction)
       if (Tasker._tasks.length != 0) Tasker._tasks = PrepareTasks(Tasker._tasks)
       let task = Tasker._tasks.shift();
       if (task == undefined || Tasker.onTaskAction(task) == TaskerFactory.PREVENT_DEFAULT) {
@@ -464,7 +471,6 @@ document.addEventListener('DOMContentLoaded', function main() {
   BababotScope.UiPlacesTaskerTasks = UiPlacesTaskerTasks;
   BababotScope.TaskerFilterPixelsByCoordinate = TaskerFilterPixelsByCoordinate;
   // "Bababot.js loaded. Made by Bababoy"
-  console.log("%c", i18n.get("inform"), "font-family: system-ui");
 
   /**
    * @param {number} pixelplaceColor
@@ -587,13 +593,13 @@ ${i18n.get("stop")}
         Tasker._tasks = Tasker.onImageTaskReorganize(Tasker._tasks,
           image[0].length,
           image.length,
-		  coords[0],
-		  coords[1]
+          coords[0],
+          coords[1]
         );
       }
       Tasker.onTaskAction = function (task) {
         if (task == undefined) {
-          tasks.forEach((task) => Tasker.addTask(task));
+          Tasker._tasks = tasks
         }
       };
       worker_tasks.terminate()
@@ -1110,11 +1116,6 @@ ${i18n.get("stop")}
           }
         });
       }
-      function getCoordinate() {
-        let raw = $("#coordinates").text();
-        let arr = raw.split(",").map((x) => parseInt(x.replace(",", "")));
-        return arr;
-      }
       let start_coordinate, end_coordinate;
       if (fill_callback) {
         fill_callback = undefined
@@ -1229,4 +1230,9 @@ ${i18n.get("stop")}
   }
   draw()
   setInterval(calcuatePPS, 1000)
-})
+}
+if (document.readyState == 'complete') {
+  main()
+} else {
+  document.addEventListener('DOMContentLoaded', main)
+}
