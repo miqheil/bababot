@@ -1,0 +1,77 @@
+<div id="menu" style="display: none">
+  <div class="lovely-division">
+    <div class="gradient_slider"></div>
+
+    <fieldset>
+      <legend>Resim botlaması</legend>
+      <canvas id="Bababot_canvas" width="100" height="100"></canvas>
+      <div>
+        <input id="Bababot_width" type="number" class="numinput along"
+        placeholder="Genişlik" /><input
+          id="Bababot_height"
+          type="number"
+          placeholder="Height"
+          class="numinput along"
+        />
+      </div>
+      <label for="Bababot_file" class="numinput along text"
+        >Resim dosyası</label
+      ><input type="file" id="Bababot_file" style="display: none" />
+      <div class="smalltext" id="Bababot_original"></div>
+      <div>
+        <input
+          id="Bababot_x"
+          type="number"
+          class="numinput along"
+          placeholder="X"
+        /><br /><input
+          id="Bababot_y"
+          type="number"
+          class="numinput along"
+          placeholder="Y"
+        />
+      </div>
+      <button class="numinput butbigger along text" id="Bababot_start">
+        Botu başlat</button
+      ><br /><button id="Bababot_stop" class="numinput butbigger along text">
+        Botu durdur
+      </button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Diğer ayarlar</legend>
+      <div class="smalltext">Eklentiler</div>
+
+      <div class="smalltext">Eklenti seç</div>
+      <div class="select">
+        <select id="Bababot_select"></select>
+        <div class="select_arrow"></div>
+      </div>
+      <div class="numinput along text" id="Bababot_run">
+        Eklentiyi çalıştır
+      </div>
+
+      <div class="smalltext">Resim uyarlama modları</div>
+
+      <div class="smalltext">Resim uyarlama modu seç</div>
+      <div class="select">
+        <select id="Bababot_dither">
+          <option value="">Default</option>
+          <option value="FloydSteinberg" selected="">FloydSteinberg</option>
+          <option value="Stucki">Stucki</option>
+          <option value="Atkinson">Atkinson</option>
+          <option value="Jarvis">Jarvis</option>
+          <option value="Burkes">Burkes</option>
+          <option value="Sierra">Sierra</option>
+          <option value="TwoSierra">TwoSierra</option>
+          <option value="SierraLite">SierraLite</option>
+          <option value="FalseFloydSteinberg">FalseFloyd</option>
+        </select>
+        <div class="select_arrow"></div>
+      </div>
+      <div class="numinput along text" id="Bababot_dither_run">
+        Uyarlama modunu uygula
+      </div>
+    </fieldset>
+  </div>
+</div>
