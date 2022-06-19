@@ -263,7 +263,7 @@ window.onBababotLoaded.push(function () {
               });
             }
           }
-          if (Tasker.onImageTaskReorganize) {
+          if (Bababot.Tasker.onImageTaskReorganize) {
             Bababot.Tasker._tasks = Bababot.Tasker.onImageTaskReorganize(
               Bababot.Tasker._tasks,
               end_coordinate[0] - start_coordinate[0],
