@@ -3,7 +3,7 @@
 // ==UserScript==
 // @name         Bababot.js
 // @namespace    https://github.com/bababoyy
-// @version      v3.52
+// @version      v3.53
 // @license      GPLv3
 // @description  Bababot
 // @author       Bababoy
