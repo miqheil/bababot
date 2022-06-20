@@ -600,7 +600,9 @@ ${i18n.get("stop")}
       Tasker.onTaskAction = function (task) {
         if (task == undefined) {
           Tasker._tasks = tasks
+          return false
         }
+        return true
       };
       worker_tasks.terminate()
     };
