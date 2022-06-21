@@ -8,7 +8,7 @@
 // @description  Bababot
 // @author       Bababoy
 // @match        https://pixelplace.io/*
-// @icon         https://i.imgur.com/yBHKs2a.png
+// @icon         https://i.imgur.com/PCn4MjQ.png
 // @require      https://code.jquery.com/jquery-3.6.0.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js
 // @require      https://raw.githubusercontent.com/bababoyy/bababot/main/jquery_ui.min.js
