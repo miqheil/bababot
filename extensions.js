@@ -263,6 +263,7 @@ window.onBababotLoaded.push(function () {
               });
             }
           }
+          Bababot.Tasker._tasks = Bababot.prepareTasks(Bababot.Tasker._tasks)
           if (Bababot.Tasker.onImageTaskReorganize) {
             Bababot.Tasker._tasks = Bababot.Tasker.onImageTaskReorganize(
               Bababot.Tasker._tasks,
