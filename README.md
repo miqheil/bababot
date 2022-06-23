@@ -1,4 +1,4 @@
-
+# Archived as there are no need for updating.
 # Bababot
 
 pixelplace.io bot to draw images and place pixels automatically
